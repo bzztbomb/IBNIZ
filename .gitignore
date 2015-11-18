@@ -1,0 +1,4 @@
+iOSBNIZ/DerivedData/*
+*.o
+src/ibniz
+*.xcworkspacedata
