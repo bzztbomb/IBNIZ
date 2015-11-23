@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C88B08021C00F5F100A18E2C /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88B08011C00F5F100A18E2C /* GLKit.framework */; };
+		C88B08051C00FA6500A18E2C /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = C88B08031C00FA6500A18E2C /* Shader.fsh */; };
+		C88B08061C00FA6500A18E2C /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = C88B08041C00FA6500A18E2C /* Shader.vsh */; };
+		C88B08081C00FE0600A18E2C /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88B08071C00FE0600A18E2C /* OpenGLES.framework */; };
 		C8BA03041BF3C5780023B683 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C8BA03031BF3C5780023B683 /* main.m */; };
 		C8BA03071BF3C5780023B683 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C8BA03061BF3C5780023B683 /* AppDelegate.m */; };
 		C8BA030A1BF3C5780023B683 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C8BA03091BF3C5780023B683 /* ViewController.m */; };
@@ -18,6 +22,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C88B08011C00F5F100A18E2C /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		C88B08031C00FA6500A18E2C /* Shader.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Shader.fsh; sourceTree = "<group>"; };
+		C88B08041C00FA6500A18E2C /* Shader.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Shader.vsh; sourceTree = "<group>"; };
+		C88B08071C00FE0600A18E2C /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		C8BA02FF1BF3C5780023B683 /* iOSBNIZ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBNIZ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8BA03031BF3C5780023B683 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C8BA03051BF3C5780023B683 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -37,6 +45,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C88B08081C00FE0600A18E2C /* OpenGLES.framework in Frameworks */,
+				C88B08021C00F5F100A18E2C /* GLKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +56,8 @@
 		C8BA02F61BF3C5780023B683 = {
 			isa = PBXGroup;
 			children = (
+				C88B08071C00FE0600A18E2C /* OpenGLES.framework */,
+				C88B08011C00F5F100A18E2C /* GLKit.framework */,
 				C8BA03191BF3C6C20023B683 /* src */,
 				C8BA03011BF3C5780023B683 /* iOSBNIZ */,
 				C8BA03001BF3C5780023B683 /* Products */,
@@ -63,6 +75,8 @@
 		C8BA03011BF3C5780023B683 /* iOSBNIZ */ = {
 			isa = PBXGroup;
 			children = (
+				C88B08031C00FA6500A18E2C /* Shader.fsh */,
+				C88B08041C00FA6500A18E2C /* Shader.vsh */,
 				C8BA03051BF3C5780023B683 /* AppDelegate.h */,
 				C8BA03061BF3C5780023B683 /* AppDelegate.m */,
 				C8BA03081BF3C5780023B683 /* ViewController.h */,
@@ -152,9 +166,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C88B08051C00FA6500A18E2C /* Shader.fsh in Resources */,
 				C8BA03121BF3C5780023B683 /* LaunchScreen.storyboard in Resources */,
 				C8BA030F1BF3C5780023B683 /* Assets.xcassets in Resources */,
 				C8BA030D1BF3C5780023B683 /* Main.storyboard in Resources */,
+				C88B08061C00FA6500A18E2C /* Shader.vsh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
