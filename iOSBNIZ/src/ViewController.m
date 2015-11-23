@@ -18,7 +18,7 @@
 
 enum
 {
-  UNIFORM_FRAME,
+  UNIFORM_PAGE,
   NUM_UNIFORMS
 };
 GLint uniforms[NUM_UNIFORMS];
@@ -34,23 +34,15 @@ static const GLfloat squareVertices[] = {
 @interface ViewController () {
   GLuint _program;
   
-  GLKMatrix4 _modelViewProjectionMatrix;
-  GLKMatrix3 _normalMatrix;
-  float _rotation;
-  
   GLuint _vertexArray;
   GLuint _vertexBuffer;
   
-  GLuint _frame;
+  GLuint _page;
   
-  uint8_t rgb[WIDTH*WIDTH*4];
-  int lastFrame;
+  int _lastPage;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
-@property (strong, nonatomic) GLKBaseEffect *effect;
-
-@property (weak, nonatomic) IBOutlet UIImageView *displayImage;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -81,12 +73,11 @@ static const GLfloat squareVertices[] = {
   
   
   vm_init();
-//  vm_compile("ppp AADD.FFFF");
+  vm_compile("ppp AADD.FFFF");
   vm_compile("^/");
+//  vm_compile("^xp");
 //  vm_compile("ppp 1111.FFFF");
   vm_init();
-  
-//  [NSTimer scheduledTimerWithTimeInterval:1.0f/160.0f target:self selector:@selector(frame:) userInfo:nil repeats:YES];
 }
 
 - (void) dealloc {
@@ -111,8 +102,6 @@ static const GLfloat squareVertices[] = {
     }
     self.context = nil;
   }
-  
-  // Dispose of any resources that can be recreated.
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -139,8 +128,8 @@ static const GLfloat squareVertices[] = {
   
   glBindVertexArrayOES(0);
   
-  glGenTextures(1, &_frame);
-  glBindTexture(GL_TEXTURE_2D, _frame);
+  glGenTextures(1, &_page);
+  glBindTexture(GL_TEXTURE_2D, _page);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
@@ -213,7 +202,7 @@ static const GLfloat squareVertices[] = {
   }
   
   // Get uniform locations.
-  uniforms[UNIFORM_FRAME] = glGetUniformLocation(_program, "frame");
+  uniforms[UNIFORM_PAGE] = glGetUniformLocation(_program, "page");
   
   // Release vertex and fragment shaders.
   if (vertShader) {
@@ -310,11 +299,13 @@ static const GLfloat squareVertices[] = {
 
 #pragma - mark mainloop
 - (void) update {
-  while (![self updateRGB])
+  while (vm.visiblepage == _lastPage)
     vm_run();
-
-  glBindTexture(GL_TEXTURE_2D, _frame);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
+  _lastPage = vm.visiblepage;
+  
+  uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
+  glBindTexture(GL_TEXTURE_2D, _page);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, s);
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
@@ -326,84 +317,10 @@ static const GLfloat squareVertices[] = {
   glUseProgram(_program);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, _frame);
-  glUniform1i(uniforms[UNIFORM_FRAME], 0);
+  glBindTexture(GL_TEXTURE_2D, _page);
+  glUniform1i(uniforms[UNIFORM_PAGE], 0);
   
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-
-#pragma - mark ibniz
-uint8_t clamp(int val) {
-  if (val <= 0)
-    return 0;
-  if (val >= 255)
-    return 255;
-  return (uint8_t) val;
-}
-
-- (BOOL) updateRGB {
-  int x,y;
-  if (vm.visiblepage == lastFrame)
-    return NO;
-  lastFrame = vm.visiblepage;
-  uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
-  
-  // Source format:  32bit->VVUU.YYYY, VV and UU are signed
-  uint8_t* target = rgb;
-  for (y=0; y < 256; y++) {
-    for (x=0; x < 256; x++) {
-      uint32_t a = s[0];
-      s++;
-      int8_t iv = (a & 0xff000000) >> 24;
-      int8_t iu = (a & 0x00ff0000) >> 16;
-      uint16_t iy = (a & 0x0000ffff); // yuv->rgb wants 0..255, will revisit
-      
-      // AADD.FFFF from screenshot -> 139, 254, 195
-      // this code.. -> 141, 362, 208, close.. need to revisit
-      float y = iy / 65535.0f;
-      float u = iu / 255.0f;
-      float v = iv / 255.0f;
-      
-      y=1.1643*(y-0.0625);
-      
-      float r=y+1.5958*v;
-      float g=y-0.39173*u-0.81290*v;
-      float b=y+2.017*u;
-      
-      r *= 255.0f;
-      g *= 255.0f;
-      b *= 255.0f;
-      
-      *target++ = clamp(r);
-      *target++ = clamp(g);
-      *target++ = clamp(b);
-      *target++ = 0xFF;
-    }
-  }
-  return YES;
-}
-
-- (void) uploadFrame {
-  if (![self updateRGB])
-    return;
-  
-  CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, rgb, WIDTH*WIDTH*4, NULL);
-  //a reasonable guess
-  CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
-  int bitsPerComponent = 8;
-  int bitsPerPixel = 32;
-  int bytesPerRow = 4 * WIDTH;
-  
-  CGImageRef imageRef = CGImageCreate(WIDTH, WIDTH, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, kCGBitmapByteOrderDefault, provider, NULL, NO, kCGRenderingIntentDefault);
-  self.displayImage.image = [UIImage imageWithCGImage:imageRef];
-  CGImageRelease(imageRef);
-  CGDataProviderRelease(provider);
-}
-
-- (void) frame:(NSTimer*) timer {
-  vm_run();
-//  [self uploadFrame];
 }
 
 @end
