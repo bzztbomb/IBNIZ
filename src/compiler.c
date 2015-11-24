@@ -13,14 +13,14 @@
 
 //#define COMPILERDEBUG
 
-void compiler_parse(char*src)
+void compiler_parse(const char*src)
 {
   char*d=vm.parsed_code;
   uint32_t*hd=vm.parsed_hints;
   uint32_t num;
-  char*s,nummode=0,shift=0;
+  char nummode=0,shift=0;
   int i,j;
-  s=src;
+  const char* s=src;
 
   /* parse immediates, skip comments & whitespaces */
 

@@ -19,14 +19,14 @@ void waitfortimechange();
 
 /* vm-specific */
 
-void vm_compile(char*src);
+void vm_compile(const char*src);
 void vm_init();
 int vm_run();
 void switchmediacontext();
 
 /* compiler */
 
-void compiler_parse(char*src);
+void compiler_parse(const char*src);
 int compiler_compile();
 
 /* clipboard */
