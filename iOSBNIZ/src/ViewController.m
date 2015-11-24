@@ -16,6 +16,9 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+void reset_start();
+void checkmediaformats();
+
 enum
 {
   UNIFORM_PAGE,
@@ -25,10 +28,10 @@ GLint uniforms[NUM_UNIFORMS];
 
 // PosX,Y / texU,V
 static const GLfloat squareVertices[] = {
-  -1.0f, -1.0f,   1.0f, 1.0f,
-  1.0f, -1.0f,   1.0f, 0.0f,
-  -1.0f,  1.0f,  0.0f,  1.0f,
-  1.0f,  1.0f,   0.0f,  0.0f,
+  -1.0f, -1.0f,   0.0f, 1.0f,  // lower left
+  1.0f, -1.0f,   1.0f, 1.0f,   // lower right
+  -1.0f,  1.0f,  0.0f,  0.0f,  // upper left
+  1.0f,  1.0f,   1.0f,  0.0f, // upper right
 };
 
 @interface ViewController () {
@@ -43,6 +46,7 @@ static const GLfloat squareVertices[] = {
 }
 
 @property (strong, nonatomic) EAGLContext *context;
+@property (weak, nonatomic) IBOutlet UILabel *debugLabel;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -68,13 +72,14 @@ static const GLfloat squareVertices[] = {
   
   GLKView *view = (GLKView *)self.view;
   view.context = self.context;
-  
+  self.preferredFramesPerSecond = 60;
   [self setupGL];
   
   
   vm_init();
-  vm_compile("ppp AADD.FFFF");
-  vm_compile("^/");
+  vm_compile("");
+//  vm_compile("ppp AADD.FFFF");
+//  vm_compile("^/");
 //  vm_compile("^xp");
 //  vm_compile("ppp 1111.FFFF");
   vm_init();
@@ -108,6 +113,14 @@ static const GLfloat squareVertices[] = {
   return YES;
 }
 
+- (IBAction)programChanged:(id)sender {
+  UITextField* field = (UITextField*) sender;
+  
+  vm_compile([field.text UTF8String]);
+  vm_init();
+  reset_start();
+}
+
 - (void)setupGL
 {
   [EAGLContext setCurrentContext:self.context];
@@ -131,6 +144,9 @@ static const GLfloat squareVertices[] = {
   glGenTextures(1, &_page);
   glBindTexture(GL_TEXTURE_2D, _page);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 - (void)tearDownGL
@@ -299,8 +315,18 @@ static const GLfloat squareVertices[] = {
 
 #pragma - mark mainloop
 - (void) update {
-  while (vm.visiblepage == _lastPage)
+  int runs = 0;
+  while (vm.visiblepage == _lastPage && runs++ < 32) {
     vm_run();
+    checkmediaformats();
+  }
+  if (vm.visiblepage == _lastPage)
+    return;
+  vm.specialcontextstep=3;
+  
+
+  self.debugLabel.text = vm.videomode?@"t":@"tyx";
+  
   _lastPage = vm.visiblepage;
   
   uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
@@ -325,11 +351,16 @@ static const GLfloat squareVertices[] = {
 
 @end
 
+static CFTimeInterval start = 0;
+
+void reset_start() {
+  start = CACurrentMediaTime();
+}
+
 int getticks()
 {
-  static CFTimeInterval start = 0;
   if (start == 0)
-    start = CACurrentMediaTime();
+    reset_start();
   return (CACurrentMediaTime() - start) * 1000.0f;
 }
 
@@ -353,3 +384,38 @@ void waitfortimechange()
   // TODO: Implement!
 }
 
+void checkmediaformats()
+{
+  if(vm.wcount[1]!=0 && vm.spchange[1]<=0)
+  {
+//    DEBUG(stderr,"audio stack underrun; shut it off!\n");
+//    ui.audio_off=1;
+    vm.spchange[1]=vm.wcount[1]=0;
+//    pauseaudio(1);
+  }
+  
+  if(vm.wcount[0]==0) return;
+  
+  // t-video in tyx-video mode produces 2 words extra per wcount
+  if((vm.videomode==0) && (vm.spchange[0]-vm.wcount[0]*2==1))
+  {
+    vm.videomode=1;
+//    DEBUG(stderr,"switched to t-video (sp changed by %d with %d w)\n",
+//          vm.spchange[0],vm.wcount);
+  }
+  else if((vm.videomode==1) && (vm.spchange[0]+vm.wcount[0]*2==1))
+  {
+    vm.videomode=0;
+//    DEBUG(stderr,"switched to tyx-video");
+  }
+  
+  if((vm.videomode==1) && (vm.spchange[1]+vm.wcount[1]*2==1))
+  {
+//    DEBUG(stderr,"A<=>V detected!\n");
+    switchmediacontext();
+    vm.videomode=0;
+    /* prevent loop */
+    vm.spchange[0]=0; vm.wcount[0]=0;
+    vm.spchange[1]=0; vm.wcount[1]=0;
+  }
+}

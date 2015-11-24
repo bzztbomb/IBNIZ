@@ -8,7 +8,7 @@
 
 uniform sampler2D page;
 
-varying lowp vec2 tc;
+varying highp vec2 tc;
 
 void main()
 {

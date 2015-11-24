@@ -1,7 +1,7 @@
 # For normal builds; remove -DX11 -lX11 from flags if you don't have X11
 CC=gcc
 EXE=ibniz
-FLAGS=`sdl-config --libs --cflags` -DX11 -lX11
+FLAGS=`sdl-config --libs --cflags`
 all: ibniz
 
 # For win32 builds using mingw32 (you'll probably need to modify these)

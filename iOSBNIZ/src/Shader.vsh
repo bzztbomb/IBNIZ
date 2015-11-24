@@ -9,7 +9,7 @@
 attribute vec2 position;
 attribute vec2 texCoord;
 
-varying lowp vec2 tc;
+varying highp vec2 tc;
 
 void main()
 {
