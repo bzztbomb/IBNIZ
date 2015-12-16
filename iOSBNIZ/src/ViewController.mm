@@ -78,6 +78,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // Font from:  http://style64.org/release/c64-truetype-v1.2-style
+  self.programField.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  
   self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
   if (!self.context) {

@@ -24,6 +24,7 @@
 		C8F0A4BA1C057486002CCC75 /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B61C057486002CCC75 /* CAStreamBasicDescription.cpp */; };
 		C8F0A4BE1C0574B3002CCC75 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8F0A4BD1C0574B3002CCC75 /* AudioToolbox.framework */; };
 		C8F0A4C11C05750D002CCC75 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8F0A4C01C05750D002CCC75 /* MediaPlayer.framework */; };
+		C8FD0F9F1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		C8F0A4B71C057486002CCC75 /* CAStreamBasicDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAStreamBasicDescription.h; sourceTree = "<group>"; };
 		C8F0A4BD1C0574B3002CCC75 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		C8F0A4C01C05750D002CCC75 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "C64_Pro_Mono-STYLE.ttf"; path = "assets/C64_Pro_Mono-STYLE.ttf"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +122,7 @@
 		C8BA03021BF3C5780023B683 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */,
 				C8BA03031BF3C5780023B683 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -206,6 +209,7 @@
 				C88B08051C00FA6500A18E2C /* Shader.fsh in Resources */,
 				C8BA03121BF3C5780023B683 /* LaunchScreen.storyboard in Resources */,
 				C8BA030F1BF3C5780023B683 /* Assets.xcassets in Resources */,
+				C8FD0F9F1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf in Resources */,
 				C8BA030D1BF3C5780023B683 /* Main.storyboard in Resources */,
 				C88B08061C00FA6500A18E2C /* Shader.vsh in Resources */,
 			);
