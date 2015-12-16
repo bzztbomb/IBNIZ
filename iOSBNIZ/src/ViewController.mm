@@ -94,7 +94,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   config.userdata = (void*) CFBridgingRetain(self);
   [_audioController initializeAUGraph:config];
 
-  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/90.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
+  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
 
   // const char* start_program = "ppp AADD.FFFF";
   // const char* start_program = "^/";
