@@ -41,6 +41,7 @@
                     </glkView>
                     <connections>
                         <outlet property="debugLabel" destination="KJo-Hb-EeA" id="Tk7-bg-0S0"/>
+                        <outlet property="programField" destination="ORS-Rh-PVk" id="nOf-j7-9aO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
