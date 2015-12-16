@@ -27,6 +27,8 @@ void scheduler_check();
 enum
 {
   UNIFORM_PAGE,
+  UNIFORM_SCALE,
+  UNIFORM_OFFSET,
   NUM_UNIFORMS
 };
 GLint uniforms[NUM_UNIFORMS];
@@ -52,6 +54,7 @@ static const GLfloat squareVertices[] = {
   AudioController* _audioController;
 
   NSTimer* _timer;
+  CGSize _kbSize;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
@@ -109,6 +112,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   vm_compile(start_program);
   vm_init();
   [_audioController startAUGraph];
+  
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillBeHidden:) name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void) dealloc {
@@ -259,6 +265,8 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   // Get uniform locations.
   uniforms[UNIFORM_PAGE] = glGetUniformLocation(_program, "page");
+  uniforms[UNIFORM_SCALE] = glGetUniformLocation(_program, "scale");
+  uniforms[UNIFORM_OFFSET] = glGetUniformLocation(_program, "offset");
 
   // Release vertex and fragment shaders.
   if (vertShader) {
@@ -377,9 +385,33 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, _page);
+  
   glUniform1i(uniforms[UNIFORM_PAGE], 0);
 
+  // Scale/offset so that we are square, and we avoid the keyboard
+  CGSize sz = self.view.frame.size;
+  sz.height -= _kbSize.height;
+  GLfloat xScale = sz.width < sz.height ? 1.0 : sz.height / sz.width;
+  GLfloat yScale = sz.height < sz.width ? 1.0 : sz.width / sz.height;
+  yScale *= sz.height / self.view.frame.size.height;
+
+  glUniform2f(uniforms[UNIFORM_SCALE], xScale, yScale);
+
+  GLfloat yOffset = _kbSize.height > 0 ? 1.0 - yScale : 0.0;
+  glUniform2f(uniforms[UNIFORM_OFFSET], 0, yOffset);
+  
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+- (void)keyboardWasShown:(NSNotification*)notification {
+  NSDictionary* info = [notification userInfo];
+  CGRect r = [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  r = [self.view convertRect:r fromView:self.view.window];
+  _kbSize.height = self.view.frame.size.height - r.origin.y;
+}
+
+-(void)keyboardWillBeHidden:(NSNotification*)notification {
+  _kbSize = CGSizeMake(0, 0);
 }
 
 @end

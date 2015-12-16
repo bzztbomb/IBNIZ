@@ -9,10 +9,13 @@
 attribute vec2 position;
 attribute vec2 texCoord;
 
+uniform vec2 offset;
+uniform vec2 scale;
+
 varying highp vec2 tc;
 
 void main()
 {
   tc = texCoord;
-  gl_Position = vec4(position.x, position.y, 0, 1);
+  gl_Position = vec4((position.x * scale.x) + offset.x, (position.y * scale.y) + offset.y, 0, 1);
 }
