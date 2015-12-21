@@ -59,7 +59,7 @@ static const GLfloat squareVertices[] = {
 
 @property (strong, nonatomic) EAGLContext *context;
 @property (weak, nonatomic) IBOutlet UILabel *debugLabel;
-@property (weak, nonatomic) IBOutlet UITextField *programField;
+@property (weak, nonatomic) IBOutlet UITextView *programText;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -79,7 +79,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   [super viewDidLoad];
 
   // Font from:  http://style64.org/release/c64-truetype-v1.2-style
-  self.programField.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
   
   self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
@@ -107,9 +107,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   // const char* start_program = "^xp";
   // const char* start_program = "ppp 1111.FFFF";
   // const char* start_program = "d3r15&*";
-
+//  const char* start_program = "ppp FFFF.FFFF";
   const char* start_program = "d3r15&*";
-  self.programField.text = [NSString stringWithUTF8String:start_program];
+  self.programText.text = [NSString stringWithUTF8String:start_program];
 
   vm_init();
   vm_compile(start_program);
@@ -118,6 +118,15 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillBeHidden:) name:UIKeyboardWillHideNotification object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(programChanged:)
+                                               name:UITextViewTextDidChangeNotification
+                                             object:nil];
+  CALayer* layer = self.programText.layer;
+  layer.shadowColor = [[UIColor blackColor] CGColor];
+  layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
+  layer.shadowOpacity = 1.0f;
+  layer.shadowRadius = 2.0f;
 }
 
 - (void) dealloc {
@@ -162,10 +171,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   vm.specialcontextstep=3;
 }
 
-- (IBAction)programChanged:(id)sender {
-  UITextField* field = (UITextField*) sender;
-
-  vm_compile([field.text UTF8String]);
+- (void)programChanged:(NSNotification*)sender {
+  NSString* str = self.programText.text;
+  vm_compile([str UTF8String]);
   vm_init();
   reset_start();
 }
