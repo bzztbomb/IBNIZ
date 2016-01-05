@@ -6,6 +6,12 @@
 //  Copyright © 2015 bzztbomb.com. All rights reserved.
 //
 
+// TODO:
+// File load/save
+// User input
+// More relavent help/start screen
+// Look at "slow boots", maybe not enough to tick the way I do
+
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>
 #import "AudioController.h"
@@ -13,6 +19,7 @@
 extern "C" {
 #define IBNIZ_MAIN
 #include "ibniz.h"
+#include "texts.i"
 }
 
 #define WIDTH 256
@@ -97,9 +104,6 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   _currView = 1;
   _views[_currView].hidden = NO;
   
-  // Font from:  http://style64.org/release/c64-truetype-v1.2-style
-  self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
-  
   self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
   if (!self.context) {
@@ -150,6 +154,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     layer.shadowOpacity = 1.0f;
     layer.shadowRadius = 2.0f;
   }
+  self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  self.helpText.font = [UIFont fontWithName:@"C64ProMono" size:12];
+  self.helpText.text = [NSString stringWithUTF8String:helpscreen];
 }
 
 - (void) dealloc {
