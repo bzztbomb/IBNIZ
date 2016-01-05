@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9059" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -24,6 +24,10 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m32-gv-aO9">
+                                <rect key="frame" x="8" y="8" width="154" height="148"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="si1-kL-ihN">
                                 <rect key="frame" x="8" y="8" width="584" height="584"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -31,17 +35,35 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                             </textView>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" text="HELP" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Scq-ya-umY">
+                                <rect key="frame" x="8" y="8" width="584" height="584"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
+                            </textView>
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LwU-E1-zyz">
+                                <rect key="frame" x="8" y="8" width="584" height="584"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
                         </subviews>
                         <constraints>
                             <constraint firstItem="bvh-AE-IKe" firstAttribute="top" secondItem="KJo-Hb-EeA" secondAttribute="bottom" constant="8" id="49T-4s-jQi"/>
                             <constraint firstItem="bvh-AE-IKe" firstAttribute="top" secondItem="si1-kL-ihN" secondAttribute="bottom" constant="8" id="BAm-Hf-jRX"/>
                             <constraint firstItem="si1-kL-ihN" firstAttribute="top" secondItem="ECL-HV-lH6" secondAttribute="topMargin" id="Gzr-58-8b2"/>
+                            <constraint firstItem="LwU-E1-zyz" firstAttribute="leading" secondItem="ECL-HV-lH6" secondAttribute="leadingMargin" id="Jg9-JW-VON"/>
+                            <constraint firstItem="LwU-E1-zyz" firstAttribute="trailing" secondItem="ECL-HV-lH6" secondAttribute="trailingMargin" id="ThV-Sa-qDy"/>
+                            <constraint firstItem="LwU-E1-zyz" firstAttribute="top" secondItem="ECL-HV-lH6" secondAttribute="topMargin" id="aCt-AH-2jT"/>
                             <constraint firstItem="si1-kL-ihN" firstAttribute="leading" secondItem="ECL-HV-lH6" secondAttribute="leadingMargin" id="enr-Ud-No5"/>
                             <constraint firstItem="si1-kL-ihN" firstAttribute="trailing" secondItem="ECL-HV-lH6" secondAttribute="trailingMargin" id="ist-0u-aQb"/>
+                            <constraint firstItem="bvh-AE-IKe" firstAttribute="top" secondItem="LwU-E1-zyz" secondAttribute="bottom" constant="8" id="nDA-VU-Cl8"/>
                         </constraints>
                     </glkView>
                     <connections>
+                        <outlet property="blankView" destination="m32-gv-aO9" id="Azp-a8-YXc"/>
                         <outlet property="debugLabel" destination="KJo-Hb-EeA" id="Tk7-bg-0S0"/>
+                        <outlet property="helpText" destination="Scq-ya-umY" id="FcL-2V-qyE"/>
+                        <outlet property="loadSaveView" destination="LwU-E1-zyz" id="NlF-wb-UcW"/>
                         <outlet property="programText" destination="si1-kL-ihN" id="WiE-7F-M01"/>
                     </connections>
                 </viewController>

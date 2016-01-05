@@ -55,11 +55,16 @@ static const GLfloat squareVertices[] = {
 
   NSTimer* _timer;
   CGSize _kbSize;
+  NSArray<UIView *>* _views;
+  int _currView;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
 @property (weak, nonatomic) IBOutlet UILabel *debugLabel;
 @property (weak, nonatomic) IBOutlet UITextView *programText;
+@property (weak, nonatomic) IBOutlet UITextView *helpText;
+@property (weak, nonatomic) IBOutlet UIView *loadSaveView;
+@property (weak, nonatomic) IBOutlet UIView *blankView;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -78,6 +83,20 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  _views = @[self.blankView, self.programText, self.helpText, self.loadSaveView];
+  
+  for (UIView* v in _views) {
+    v.hidden = YES;
+    UISwipeGestureRecognizer* swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
+    swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    UISwipeGestureRecognizer* swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeRight:)];
+    swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+    [v addGestureRecognizer:swipeLeft];
+    [v addGestureRecognizer:swipeRight];
+  }
+  _currView = 1;
+  _views[_currView].hidden = NO;
+  
   // Font from:  http://style64.org/release/c64-truetype-v1.2-style
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
   
@@ -122,11 +141,15 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
                                            selector:@selector(programChanged:)
                                                name:UITextViewTextDidChangeNotification
                                              object:nil];
-  CALayer* layer = self.programText.layer;
-  layer.shadowColor = [[UIColor blackColor] CGColor];
-  layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
-  layer.shadowOpacity = 1.0f;
-  layer.shadowRadius = 2.0f;
+  
+  NSArray* shadows = @[self.programText, self.helpText];
+  for (UITextView* view in shadows) {
+    CALayer* layer = view.layer;
+    layer.shadowColor = [[UIColor blackColor] CGColor];
+    layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
+    layer.shadowOpacity = 1.0f;
+    layer.shadowRadius = 2.0f;
+  }
 }
 
 - (void) dealloc {
@@ -176,6 +199,50 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   vm_compile([str UTF8String]);
   vm_init();
   reset_start();
+}
+
+- (void) animateIt:(int) direction {
+  if ((_currView == 0) && (direction == -1))
+    return;
+  if ((_currView == _views.count -1) && (direction == 1))
+    return;
+
+  UIView* currVisible = _views[_currView];
+  UIView* newView = _views[_currView+direction];
+  _currView += direction;
+  
+  CGFloat xOffset = self.view.frame.size.width;
+  CGPoint newViewCenter = newView.center;
+  newViewCenter.x += xOffset * direction;
+  newView.center = newViewCenter;
+  newViewCenter.x -= xOffset * direction;
+  newView.alpha = 0.0;
+  newView.hidden = NO;
+  
+  CGPoint currVisibleCenter = currVisible.center;
+  CGPoint currVisibleOriginal = currVisibleCenter;
+  currVisibleCenter.x -= xOffset * direction;
+  
+  [UIView animateWithDuration:0.3 animations:^{
+    newView.center = newViewCenter;
+    currVisible.center = currVisibleCenter;
+    newView.alpha = 1.0f;
+    currVisible.alpha = 0.0f;
+  } completion:^(BOOL finished) {
+    currVisible.hidden = YES;
+    currVisible.center = currVisibleOriginal;
+    if (_currView == 0)
+      [self.programText resignFirstResponder];
+  }];
+
+}
+
+- (void) swipeLeft:(UISwipeGestureRecognizer*) recognizer {
+  [self animateIt:1];
+}
+
+- (void) swipeRight:(UISwipeGestureRecognizer*) recognizer {
+  [self animateIt:-1];
 }
 
 - (void)setupGL
