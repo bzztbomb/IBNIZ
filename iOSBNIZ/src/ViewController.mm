@@ -4,6 +4,9 @@
 //
 //  Created by Brian Richardson on 11/11/15.
 
+// TODO:
+// Launch screen / icon
+
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>
 #import "AudioController.h"
