@@ -5,7 +5,6 @@
 //  Created by Brian Richardson on 11/11/15.
 
 // TODO:
-// More relavent help/start screen
 // Look at "slow boots", maybe not enough to tick the way I do
 
 #import "ViewController.h"
@@ -15,7 +14,7 @@
 extern "C" {
 #define IBNIZ_MAIN
 #include "ibniz.h"
-#include "texts.i"
+#include "ios_texts.i"
 }
 
 #define WIDTH 256
@@ -90,6 +89,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  
+  self.debugLabel.hidden = YES;
+  
   [self becomeFirstResponder];
 
   _views = @[self.blankView, self.programText, self.helpText, self.loadSaveView];
@@ -139,7 +141,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   // const char* start_program = "d3r15&*";
 //  const char* start_program = "ppp FFFF.FFFF";
   const char* start_program = "d3r15&*";
-  self.programText.text = [NSString stringWithUTF8String:start_program];
+  self.programText.text = [NSString stringWithFormat:@"%s\n%s",welcometext, start_program];
 
   vm_init();
   vm_compile(start_program);
@@ -161,7 +163,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     layer.shadowOpacity = 1.0f;
     layer.shadowRadius = 2.0f;
   }
-  self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  self.programText.font = [UIFont fontWithName:@"C64ProMono" size:16];
   self.helpText.font = [UIFont fontWithName:@"C64ProMono" size:12];
   self.helpText.text = [NSString stringWithUTF8String:helpscreen];
   
@@ -277,8 +279,8 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   CGSize sz = recognizer.view.frame.size;
   coord.x = (coord.x / sz.width) * 255;
   coord.y = (coord.y / sz.height) * 255;
-  uint32_t x = ((uint32_t) coord.x) << 24;
-  uint32_t y = ((uint32_t) coord.y) << 16;
+  uint32_t x = ((uint32_t) coord.x) << 8;
+  uint32_t y = ((uint32_t) coord.y);
   vm.userinput = y | x;
 }
 
@@ -707,7 +709,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   {
     int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
     float val = (float) ival / (float) INT16_MAX;
-    val *= 0.0f;
+//    val *= 0.0f;
     output_buffer[0][i] = val;
     output_buffer[1][i] = val;
     auplayptr+=0x164A9; /* (61440<<16)/44100 */
