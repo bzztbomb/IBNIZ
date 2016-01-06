@@ -7,7 +7,6 @@
 //
 
 // TODO:
-// File load/save
 // User input
 // More relavent help/start screen
 // Look at "slow boots", maybe not enough to tick the way I do
@@ -48,7 +47,7 @@ static const GLfloat squareVertices[] = {
   1.0f,  1.0f,   1.0f,  0.0f, // upper right
 };
 
-@interface ViewController () {
+@interface ViewController () <UITableViewDataSource, UIAlertViewDelegate> {
   GLuint _program;
 
   GLuint _vertexArray;
@@ -64,6 +63,8 @@ static const GLfloat squareVertices[] = {
   CGSize _kbSize;
   NSArray<UIView *>* _views;
   int _currView;
+  
+  NSArray<NSString *>* _files;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
@@ -72,6 +73,8 @@ static const GLfloat squareVertices[] = {
 @property (weak, nonatomic) IBOutlet UITextView *helpText;
 @property (weak, nonatomic) IBOutlet UIView *loadSaveView;
 @property (weak, nonatomic) IBOutlet UIView *blankView;
+@property (weak, nonatomic) IBOutlet UITableView *filesTableView;
+@property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -157,6 +160,15 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:20];
   self.helpText.font = [UIFont fontWithName:@"C64ProMono" size:12];
   self.helpText.text = [NSString stringWithUTF8String:helpscreen];
+  
+  for (UIButton* b in self.buttons) {
+    b.titleLabel.font = [UIFont fontWithName:@"C64ProMono" size:20];
+    b.layer.backgroundColor = [UIColor blackColor].CGColor;
+    b.layer.borderColor = [UIColor whiteColor].CGColor;
+    b.layer.borderWidth = 2;
+  }
+  
+  self.filesTableView.backgroundColor = [UIColor clearColor];
 }
 
 - (void) dealloc {
@@ -240,6 +252,10 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     currVisible.center = currVisibleOriginal;
     if (_currView == 0)
       [self.programText resignFirstResponder];
+    if (_currView == 3) {
+      [self loadFiles];
+      [self.filesTableView reloadData];
+    }
   }];
 
 }
@@ -252,6 +268,66 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   [self animateIt:-1];
 }
 
+#pragma mark - File load/save
+- (NSString*) documentDir {
+  NSArray *myPathList =  NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString* docPath = [myPathList objectAtIndex:0];
+  return docPath;
+}
+
+- (void) loadFiles {
+  _files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self documentDir] error:nil];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+  if (!_files)
+    [self loadFiles];
+  return _files.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+  UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"BasicTableCell"];
+  cell.layer.backgroundColor = [UIColor blackColor].CGColor;
+  cell.layer.borderColor = [UIColor whiteColor].CGColor;
+  cell.layer.borderWidth = 2;
+  cell.textLabel.font = [UIFont fontWithName:@"C64ProMono" size:16];
+  cell.textLabel.text = [_files objectAtIndex:indexPath.row];
+  return cell;
+}
+
+- (IBAction)loadHit:(id)sender {
+  NSIndexPath* path = [self.filesTableView indexPathForSelectedRow];
+  NSString* name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [_files objectAtIndex:path.row]];
+  self.programText.text = [NSString stringWithContentsOfFile:name encoding:NSUTF8StringEncoding error:nil];
+  [self programChanged:nil];
+  [self animateIt:-2];
+}
+
+- (IBAction)saveHit:(id)sender {
+  UIAlertView* view = [[UIAlertView alloc] initWithTitle:@"Filename"
+                                                 message:@"Enter filename"
+                                                delegate:self
+                                       cancelButtonTitle:@"Cancel"
+                                       otherButtonTitles:@"OK", nil];
+  view.alertViewStyle = UIAlertViewStylePlainTextInput;
+  [view show];
+}
+
+//UIAlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+  //okay
+  if (buttonIndex != 1)
+    return;
+  NSString* name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [[alertView textFieldAtIndex:0] text]];
+  NSString* data = self.programText.text;
+  [data writeToFile:name atomically:NO encoding:NSUTF8StringEncoding error:nil];
+  [self loadFiles];
+  [self.filesTableView reloadData];
+}
+
+
+#pragma mark - GL
 - (void)setupGL
 {
   [EAGLContext setCurrentContext:self.context];
