@@ -4,9 +4,6 @@
 //
 //  Created by Brian Richardson on 11/11/15.
 
-// TODO:
-// Look at "slow boots", maybe not enough to tick the way I do
-
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>
 #import "AudioController.h"
@@ -25,6 +22,7 @@ extern "C" {
 void reset_start();
 void checkmediaformats();
 void scheduler_check();
+int getticks();
 
 enum
 {
@@ -209,8 +207,10 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   checkmediaformats();
   scheduler_check();
 
-  uint32_t prevT = gettimevalue();
-  while (prevT == gettimevalue()) {
+  // Run until we have a new frame or 1/60 of a second has passed.  Seems to be ok, can improve later.
+  uint32_t prevT = getticks();
+  char old_page = vm.visiblepage;
+  while (getticks() - prevT < (1000/70) && old_page == vm.visiblepage) {
     vm_run();
     checkmediaformats();
     scheduler_check();
