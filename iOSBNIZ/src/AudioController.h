@@ -3,8 +3,6 @@
 //  playbin
 //
 //  Created by Brian Richardson on 3/26/12.
-//  Copyright 2012 Knowhere Studios Inc. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>

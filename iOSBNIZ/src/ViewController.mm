@@ -3,11 +3,8 @@
 //  iOSBNIZ
 //
 //  Created by Brian Richardson on 11/11/15.
-//  Copyright © 2015 bzztbomb.com. All rights reserved.
-//
 
 // TODO:
-// User input
 // More relavent help/start screen
 // Look at "slow boots", maybe not enough to tick the way I do
 
@@ -65,6 +62,7 @@ static const GLfloat squareVertices[] = {
   int _currView;
   
   NSArray<NSString *>* _files;
+  NSMutableArray<UIGestureRecognizer*>* _pans;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
@@ -92,17 +90,23 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  [self becomeFirstResponder];
 
   _views = @[self.blankView, self.programText, self.helpText, self.loadSaveView];
   
+  _pans = [[NSMutableArray alloc] init];
   for (UIView* v in _views) {
     v.hidden = YES;
     UISwipeGestureRecognizer* swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
     swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    [v addGestureRecognizer:swipeLeft];
     UISwipeGestureRecognizer* swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeRight:)];
     swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
-    [v addGestureRecognizer:swipeLeft];
     [v addGestureRecognizer:swipeRight];
+    UIPanGestureRecognizer* panIt = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panning:)];
+    panIt.enabled = NO;
+    [v addGestureRecognizer:panIt];
+    [_pans addObject:panIt];
   }
   _currView = 1;
   _views[_currView].hidden = NO;
@@ -266,6 +270,28 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void) swipeRight:(UISwipeGestureRecognizer*) recognizer {
   [self animateIt:-1];
+}
+
+- (void) panning:(UIPanGestureRecognizer*) recognizer {
+  CGPoint coord = [recognizer locationInView:recognizer.view];
+  CGSize sz = recognizer.view.frame.size;
+  coord.x = (coord.x / sz.width) * 255;
+  coord.y = (coord.y / sz.height) * 255;
+  uint32_t x = ((uint32_t) coord.x) << 24;
+  uint32_t y = ((uint32_t) coord.y) << 16;
+  vm.userinput = y | x;
+}
+
+- (BOOL) canBecomeFirstResponder {
+  return YES;
+}
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+  if (motion == UIEventSubtypeMotionShake)
+  {
+    for (UIGestureRecognizer* gesture in _pans)
+      gesture.enabled = !gesture.enabled;
+  }
 }
 
 #pragma mark - File load/save
@@ -681,6 +707,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   {
     int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
     float val = (float) ival / (float) INT16_MAX;
+    val *= 0.0f;
     output_buffer[0][i] = val;
     output_buffer[1][i] = val;
     auplayptr+=0x164A9; /* (61440<<16)/44100 */
