@@ -5,9 +5,7 @@
 //  Created by Brian Richardson on 11/11/15.
 
 // TODO:
-//
-//   Restart time button, gesture (double tap)
-//   Launch screen / icon
+//  Launch screen / icon
 
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>
@@ -100,6 +98,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   _pans = [[NSMutableArray alloc] init];
   for (UIView* v in _views) {
     v.hidden = YES;
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(restartTime:)];
+    tap.numberOfTouchesRequired = 2;
+    [v addGestureRecognizer:tap];
     UISwipeGestureRecognizer* swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
     swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
     [v addGestureRecognizer:swipeLeft];
@@ -169,6 +170,9 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   ViewController* __weak weakSelf = self;
   _keys.changed = ^() {
     [weakSelf programChanged:nil];
+  };
+  _keys.resetTimeRequested = ^() {
+    reset_start();
   };
   self.programText.inputView = _keys;
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:16];
@@ -267,6 +271,10 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     }
   }];
 
+}
+
+- (void) restartTime:(id) sender {
+  reset_start();
 }
 
 - (void) swipeLeft:(UISwipeGestureRecognizer*) recognizer {
@@ -617,9 +625,10 @@ static uint32_t auplaytime = 0;
 static volatile int in_audio = 0;
 
 void reset_start() {
-  for (; in_audio; ) {}
+  for (; in_audio; ) {} // try an wait for the buffer to get played
   start = CACurrentMediaTime();
   auplayptr = auplaytime = 0;
+  vm.videotime = 0;
   vm.audiotime = 0;
   vm.prevsp[1] = 0;
 }

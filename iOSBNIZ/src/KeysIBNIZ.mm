@@ -108,7 +108,7 @@ struct opcode_t opcodes[] = {
   UILabel* _helpLabel;
   NSTimer* _helpTimer;
   UILabel* _modeLabel;
-  UILabel* _timeLabel;
+  IBNIZButton* _timeButton;
 }
 
 @end
@@ -139,7 +139,7 @@ struct opcode_t opcodes[] = {
   UIView* page0 = [[UIView alloc] initWithFrame:pageRect];
   UIView* page1 = [[UIView alloc] initWithFrame:pageRect];
   
-  for (int i = 0; i < 65; i++) {
+  for (int i = 0; i < 66; i++) {
     CGRect buttonRect = CGRectMake(0, 0, 10, 10);
     IBNIZButton* btn = [[IBNIZButton alloc] initWithFrame:buttonRect];
     [btn setTitle:[NSString stringWithUTF8String:opcodes[i].symbol] forState:UIControlStateNormal];
@@ -147,7 +147,7 @@ struct opcode_t opcodes[] = {
     [btn addTarget:self action:@selector(buttonDown:) forControlEvents:UIControlEventTouchDown];
     [btn addTarget:self action:@selector(hideHelp:) forControlEvents:UIControlEventTouchUpOutside];
     btn.tag = i;
-    if (i < 32)
+    if (i <= 32)
       [page0 addSubview:btn];
     else
       [page1 addSubview:btn];
@@ -160,9 +160,11 @@ struct opcode_t opcodes[] = {
   }
 
   CGRect buttonRect = CGRectMake(0, 0, 10, 10);
-  _timeLabel = [[IBNIZLabel alloc] initWithFrame:buttonRect];
-  _timeLabel.font = [UIFont fontWithName:@"C64ProMono" size:10];
-  [self addSubview:_timeLabel];
+  _timeButton = [[IBNIZButton alloc] initWithFrame:buttonRect];
+  _timeButton.titleLabel.font = [UIFont fontWithName:@"C64ProMono" size:10];
+  [_timeButton addTarget:self action:@selector(resetTimeHit:) forControlEvents:UIControlEventTouchUpInside];
+  [self addSubview:_timeButton];
+  
   //
   IBNIZButton* spaceBtn = [[IBNIZButton alloc] initWithFrame:buttonRect];
   [spaceBtn setTitle:@" " forState:UIControlStateNormal];
@@ -221,7 +223,7 @@ struct opcode_t opcodes[] = {
 
 - (void) setTime:(NSString *)time {
   _time = time;
-  _timeLabel.text = time;
+  [_timeButton setTitle:time forState:UIControlStateNormal];
 }
 
 - (void) setTextView:(UITextView *)textView {
@@ -254,7 +256,7 @@ struct opcode_t opcodes[] = {
   
   commonRect = CGRectMake(sz.width / 2, commonSz.height * 3, commonSz.width, commonSz.height);
   commonRect.origin.x -= commonRect.size.width;
-  _timeLabel.frame = commonRect;
+  _timeButton.frame = commonRect;
   
   CGRect r = CGRectMake(0,0,self.frame.size.width / _accessoryView.subviews.count, 40);
   for (UIView* v in _accessoryView.subviews) {
@@ -290,6 +292,10 @@ struct opcode_t opcodes[] = {
 
 - (void) enterHit:(IBNIZButton*) sender {
   [self insertString:@"\n"];
+}
+
+- (void) resetTimeHit:(IBNIZButton*) sender {
+  self.resetTimeRequested();
 }
 
 - (void) buttonDown:(IBNIZButton*) sender {

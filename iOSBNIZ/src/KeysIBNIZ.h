@@ -14,5 +14,6 @@
 @property (nonatomic, copy) void (^changed)();
 @property (assign, nonatomic) NSString* mode;
 @property (assign, nonatomic) NSString* time;
+@property (nonatomic, copy) void (^resetTimeRequested)();
 
 @end
