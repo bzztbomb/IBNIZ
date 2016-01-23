@@ -232,7 +232,9 @@ struct opcode_t opcodes[] = {
 - (void) layoutSubviews {
   [super layoutSubviews];
   const CGSize sz = self.frame.size;
+  CGRect pageRect = CGRectMake(0, 0, sz.width, sz.height);
   for (UIView* page in _pages) {
+    page.frame = pageRect;
     CGRect r = CGRectMake(0, 0, sz.width / 10, sz.height / 4);
     for (UIView* key in page.subviews) {
       key.frame = r;
