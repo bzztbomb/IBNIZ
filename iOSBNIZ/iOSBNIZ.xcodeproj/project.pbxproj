@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C88ABA7F1C5343AD006713B8 /* IBNIZButton.m in Sources */ = {isa = PBXBuildFile; fileRef = C88ABA7E1C5343AD006713B8 /* IBNIZButton.m */; };
 		C88B08021C00F5F100A18E2C /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88B08011C00F5F100A18E2C /* GLKit.framework */; };
 		C88B08051C00FA6500A18E2C /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = C88B08031C00FA6500A18E2C /* Shader.fsh */; };
 		C88B08061C00FA6500A18E2C /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = C88B08041C00FA6500A18E2C /* Shader.vsh */; };
@@ -25,9 +26,12 @@
 		C8F0A4BE1C0574B3002CCC75 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8F0A4BD1C0574B3002CCC75 /* AudioToolbox.framework */; };
 		C8F0A4C11C05750D002CCC75 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8F0A4C01C05750D002CCC75 /* MediaPlayer.framework */; };
 		C8FD0F9F1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */; };
+		C8FF232C1C437B950028B11C /* KeysIBNIZ.mm in Sources */ = {isa = PBXBuildFile; fileRef = C8FF232B1C437B950028B11C /* KeysIBNIZ.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C88ABA7D1C5343AD006713B8 /* IBNIZButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IBNIZButton.h; sourceTree = "<group>"; };
+		C88ABA7E1C5343AD006713B8 /* IBNIZButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IBNIZButton.m; sourceTree = "<group>"; };
 		C88B08011C00F5F100A18E2C /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		C88B08031C00FA6500A18E2C /* Shader.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Shader.fsh; sourceTree = "<group>"; };
 		C88B08041C00FA6500A18E2C /* Shader.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Shader.vsh; sourceTree = "<group>"; };
@@ -56,6 +60,8 @@
 		C8F0A4BD1C0574B3002CCC75 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		C8F0A4C01C05750D002CCC75 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "C64_Pro_Mono-STYLE.ttf"; path = "assets/C64_Pro_Mono-STYLE.ttf"; sourceTree = SOURCE_ROOT; };
+		C8FF232A1C437B950028B11C /* KeysIBNIZ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeysIBNIZ.h; sourceTree = "<group>"; };
+		C8FF232B1C437B950028B11C /* KeysIBNIZ.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = KeysIBNIZ.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +100,8 @@
 		C8BA03011BF3C5780023B683 /* iOSBNIZ */ = {
 			isa = PBXGroup;
 			children = (
+				C8BA03051BF3C5780023B683 /* AppDelegate.h */,
+				C8BA03061BF3C5780023B683 /* AppDelegate.m */,
 				C8F0A4AF1C057486002CCC75 /* AudioController.h */,
 				C8F0A4B01C057486002CCC75 /* AudioController.mm */,
 				C8F0A4B11C057486002CCC75 /* CADebugMacros.cpp */,
@@ -103,10 +111,10 @@
 				C8F0A4B51C057486002CCC75 /* CAMath.h */,
 				C8F0A4B61C057486002CCC75 /* CAStreamBasicDescription.cpp */,
 				C8F0A4B71C057486002CCC75 /* CAStreamBasicDescription.h */,
+				C8FF232A1C437B950028B11C /* KeysIBNIZ.h */,
+				C8FF232B1C437B950028B11C /* KeysIBNIZ.mm */,
 				C88B08031C00FA6500A18E2C /* Shader.fsh */,
 				C88B08041C00FA6500A18E2C /* Shader.vsh */,
-				C8BA03051BF3C5780023B683 /* AppDelegate.h */,
-				C8BA03061BF3C5780023B683 /* AppDelegate.m */,
 				C8BA03081BF3C5780023B683 /* ViewController.h */,
 				C8BA03091BF3C5780023B683 /* ViewController.mm */,
 				C8BA030B1BF3C5780023B683 /* Main.storyboard */,
@@ -114,6 +122,8 @@
 				C8BA03101BF3C5780023B683 /* LaunchScreen.storyboard */,
 				C8BA03131BF3C5780023B683 /* Info.plist */,
 				C8BA03021BF3C5780023B683 /* Supporting Files */,
+				C88ABA7D1C5343AD006713B8 /* IBNIZButton.h */,
+				C88ABA7E1C5343AD006713B8 /* IBNIZButton.m */,
 			);
 			name = iOSBNIZ;
 			path = src;
@@ -222,12 +232,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C88ABA7F1C5343AD006713B8 /* IBNIZButton.m in Sources */,
 				C8BA030A1BF3C5780023B683 /* ViewController.mm in Sources */,
 				C8BA03071BF3C5780023B683 /* AppDelegate.m in Sources */,
 				C8BA031D1BF3C6F80023B683 /* vm_slow.c in Sources */,
 				C8F0A4BA1C057486002CCC75 /* CAStreamBasicDescription.cpp in Sources */,
 				C8BA031C1BF3C6F80023B683 /* compiler.c in Sources */,
 				C8F0A4B81C057486002CCC75 /* AudioController.mm in Sources */,
+				C8FF232C1C437B950028B11C /* KeysIBNIZ.mm in Sources */,
 				C8F0A4B91C057486002CCC75 /* CADebugMacros.cpp in Sources */,
 				C8BA03041BF3C5780023B683 /* main.m in Sources */,
 			);

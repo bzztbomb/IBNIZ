@@ -5,11 +5,13 @@
 //  Created by Brian Richardson on 11/11/15.
 
 // TODO:
-// Launch screen / icon
+//   Restart time button, gesture
+//   Launch screen / icon
 
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>
 #import "AudioController.h"
+#import "KeysIBNIZ.h"
 
 extern "C" {
 #define IBNIZ_MAIN
@@ -60,9 +62,10 @@ static const GLfloat squareVertices[] = {
   CGSize _kbSize;
   NSArray<UIView *>* _views;
   int _currView;
-  
+
   NSArray<NSString *>* _files;
   NSMutableArray<UIGestureRecognizer*>* _pans;
+  KeysIBNIZ* _keys;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
@@ -72,7 +75,6 @@ static const GLfloat squareVertices[] = {
 @property (weak, nonatomic) IBOutlet UIView *loadSaveView;
 @property (weak, nonatomic) IBOutlet UIView *blankView;
 @property (weak, nonatomic) IBOutlet UITableView *filesTableView;
-@property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -90,13 +92,13 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  
+
   self.debugLabel.hidden = YES;
-  
+
   [self becomeFirstResponder];
 
   _views = @[self.blankView, self.programText, self.helpText, self.loadSaveView];
-  
+
   _pans = [[NSMutableArray alloc] init];
   for (UIView* v in _views) {
     v.hidden = YES;
@@ -113,7 +115,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   }
   _currView = 1;
   _views[_currView].hidden = NO;
-  
+
   self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
   if (!self.context) {
@@ -148,14 +150,14 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   vm_compile(start_program);
   vm_init();
   [_audioController startAUGraph];
-  
+
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillBeHidden:) name:UIKeyboardWillHideNotification object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(programChanged:)
                                                name:UITextViewTextDidChangeNotification
                                              object:nil];
-  
+
   NSArray* shadows = @[self.programText, self.helpText];
   for (UITextView* view in shadows) {
     CALayer* layer = view.layer;
@@ -164,17 +166,17 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     layer.shadowOpacity = 1.0f;
     layer.shadowRadius = 2.0f;
   }
+  _keys = [[KeysIBNIZ alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height / 4.0f)];
+  _keys.textView = self.programText;
+  ViewController* __weak weakSelf = self;
+  _keys.changed = ^() {
+    [weakSelf programChanged:nil];
+  };
+  self.programText.inputView = _keys;
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:16];
   self.helpText.font = [UIFont fontWithName:@"C64ProMono" size:12];
   self.helpText.text = [NSString stringWithUTF8String:helpscreen];
-  
-  for (UIButton* b in self.buttons) {
-    b.titleLabel.font = [UIFont fontWithName:@"C64ProMono" size:20];
-    b.layer.backgroundColor = [UIColor blackColor].CGColor;
-    b.layer.borderColor = [UIColor whiteColor].CGColor;
-    b.layer.borderWidth = 2;
-  }
-  
+
   self.filesTableView.backgroundColor = [UIColor clearColor];
 }
 
@@ -226,7 +228,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   NSString* str = self.programText.text;
   vm_compile([str UTF8String]);
   vm_init();
-  reset_start();
+//  reset_start();
 }
 
 - (void) animateIt:(int) direction {
@@ -238,7 +240,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   UIView* currVisible = _views[_currView];
   UIView* newView = _views[_currView+direction];
   _currView += direction;
-  
+
   CGFloat xOffset = self.view.frame.size.width;
   CGPoint newViewCenter = newView.center;
   newViewCenter.x += xOffset * direction;
@@ -246,11 +248,11 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   newViewCenter.x -= xOffset * direction;
   newView.alpha = 0.0;
   newView.hidden = NO;
-  
+
   CGPoint currVisibleCenter = currVisible.center;
   CGPoint currVisibleOriginal = currVisibleCenter;
   currVisibleCenter.x -= xOffset * direction;
-  
+
   [UIView animateWithDuration:0.3 animations:^{
     newView.center = newViewCenter;
     currVisible.center = currVisibleCenter;
@@ -259,7 +261,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   } completion:^(BOOL finished) {
     currVisible.hidden = YES;
     currVisible.center = currVisibleOriginal;
-    if (_currView == 0)
+    if (_currView != 1)
       [self.programText resignFirstResponder];
     if (_currView == 3) {
       [self loadFiles];
@@ -328,6 +330,8 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (IBAction)loadHit:(id)sender {
   NSIndexPath* path = [self.filesTableView indexPathForSelectedRow];
+  if (path.row >= _files.count)
+    return;
   NSString* name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [_files objectAtIndex:path.row]];
   self.programText.text = [NSString stringWithContentsOfFile:name encoding:NSUTF8StringEncoding error:nil];
   [self programChanged:nil];
@@ -577,7 +581,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, _page);
-  
+
   glUniform1i(uniforms[UNIFORM_PAGE], 0);
 
   // Scale/offset so that we are square, and we avoid the keyboard
@@ -591,7 +595,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   GLfloat yOffset = _kbSize.height > 0 ? 1.0 - yScale : 0.0;
   glUniform2f(uniforms[UNIFORM_OFFSET], 0, yOffset);
-  
+
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
@@ -611,11 +615,14 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 static CFTimeInterval start = 0;
 static uint32_t auplayptr = 0;
 static uint32_t auplaytime = 0;
+static volatile int in_audio = 0;
 
 void reset_start() {
+  for (; in_audio; ) {}
   start = CACurrentMediaTime();
   auplayptr = auplaytime = 0;
   vm.audiotime = 0;
+  vm.prevsp[1] = 0;
 }
 
 int getticks()
@@ -707,6 +714,7 @@ void scheduler_check()
 }
 
 void audio_callback(unsigned int frames, float ** input_buffer, float ** output_buffer, void * user_data) {
+  in_audio = 1;
   uint32_t aupp0=auplayptr;
   for(int i = 0; i < frames; i++)
   {
@@ -722,4 +730,6 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   {
     auplaytime+=64*65536;
   }
+  in_audio = 0;
 }
+

@@ -37,7 +37,7 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                             </textView>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="HELP" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Scq-ya-umY">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" text="HELP" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Scq-ya-umY">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -47,7 +47,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LwU-E1-zyz">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e8d-4n-gDY">
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e8d-4n-gDY" customClass="IBNIZButton">
                                         <rect key="frame" x="342" y="34" width="250" height="30"/>
                                         <state key="normal" title="SAVE">
                                             <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -86,7 +86,7 @@
                                             <outlet property="dataSource" destination="BYZ-38-t0r" id="Yvl-l3-pxA"/>
                                         </connections>
                                     </tableView>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LTP-eN-yZE">
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LTP-eN-yZE" customClass="IBNIZButton">
                                         <rect key="frame" x="8" y="34" width="250" height="30"/>
                                         <state key="normal" title="LOAD">
                                             <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -138,8 +138,6 @@
                         <outlet property="helpText" destination="Scq-ya-umY" id="FcL-2V-qyE"/>
                         <outlet property="loadSaveView" destination="LwU-E1-zyz" id="NlF-wb-UcW"/>
                         <outlet property="programText" destination="si1-kL-ihN" id="WiE-7F-M01"/>
-                        <outletCollection property="buttons" destination="LTP-eN-yZE" id="5yA-UH-fZx"/>
-                        <outletCollection property="buttons" destination="e8d-4n-gDY" id="9E0-x5-4nz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
