@@ -11,3 +11,7 @@
 @interface IBNIZButton : UIButton
 
 @end
+
+@interface IBNIZLabel : UILabel
+
+@end

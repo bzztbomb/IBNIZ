@@ -32,3 +32,28 @@
 }
 
 @end
+
+@implementation IBNIZLabel
+
+-(id) initWithCoder:(NSCoder *)aDecoder {
+  if (self = [super initWithCoder:aDecoder]) {
+    [self commonInit];
+  }
+  return self;
+}
+
+-(id) initWithFrame:(CGRect)frame {
+  if (self = [super initWithFrame:frame]) {
+    [self commonInit];
+  }
+  return self;
+}
+
+-(void) commonInit {
+  self.backgroundColor = [UIColor blackColor];
+  self.textColor = [UIColor whiteColor];
+  self.font = [UIFont fontWithName:@"C64ProMono" size:20];
+}
+
+
+@end

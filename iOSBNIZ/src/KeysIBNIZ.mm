@@ -108,6 +108,7 @@ struct opcode_t opcodes[] = {
   UILabel* _helpLabel;
   NSTimer* _helpTimer;
   UILabel* _modeLabel;
+  UILabel* _timeLabel;
 }
 
 @end
@@ -159,6 +160,10 @@ struct opcode_t opcodes[] = {
   }
 
   CGRect buttonRect = CGRectMake(0, 0, 10, 10);
+  _timeLabel = [[IBNIZLabel alloc] initWithFrame:buttonRect];
+  _timeLabel.font = [UIFont fontWithName:@"C64ProMono" size:10];
+  [self addSubview:_timeLabel];
+  //
   IBNIZButton* spaceBtn = [[IBNIZButton alloc] initWithFrame:buttonRect];
   [spaceBtn setTitle:@" " forState:UIControlStateNormal];
   [spaceBtn addTarget:self action:@selector(buttonHit:) forControlEvents:UIControlEventTouchUpInside];
@@ -166,6 +171,8 @@ struct opcode_t opcodes[] = {
   [backspaceBtn setTitle:@"<-" forState:UIControlStateNormal];
   [backspaceBtn addTarget:self action:@selector(backspace:) forControlEvents:UIControlEventTouchUpInside];
   IBNIZButton* enterBtn = [[IBNIZButton alloc] initWithFrame:buttonRect];
+  if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
+    enterBtn.titleLabel.font = [UIFont fontWithName:@"C64ProMono" size:10];
   [enterBtn setTitle:@"ENTER" forState:UIControlStateNormal];
   [enterBtn addTarget:self action:@selector(enterHit:) forControlEvents:UIControlEventTouchUpInside];
   _commonKeys = @[spaceBtn, backspaceBtn, enterBtn];
@@ -200,10 +207,7 @@ struct opcode_t opcodes[] = {
   [_accessoryView addSubview:btn];
   
   r.origin.x += r.size.width;
-  _modeLabel = [[UILabel alloc] initWithFrame:r];
-  _modeLabel.backgroundColor = [UIColor blackColor];
-  _modeLabel.textColor = [UIColor whiteColor];
-  _modeLabel.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  _modeLabel = [[IBNIZLabel alloc] initWithFrame:r];
   [_accessoryView addSubview:_modeLabel];
 }
 
@@ -213,6 +217,11 @@ struct opcode_t opcodes[] = {
     _modeLabel.text = [NSString stringWithFormat:@"  MODE: %@", mode];
   else
     _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
+}
+
+- (void) setTime:(NSString *)time {
+  _time = time;
+  _timeLabel.text = time;
 }
 
 - (void) setTextView:(UITextView *)textView {
@@ -240,6 +249,10 @@ struct opcode_t opcodes[] = {
     v.frame = commonRect;
     commonRect.origin.x += commonSz.width;
   }
+  
+  commonRect = CGRectMake(sz.width / 2, commonSz.height * 3, commonSz.width, commonSz.height);
+  commonRect.origin.x -= commonRect.size.width;
+  _timeLabel.frame = commonRect;
   
   CGRect r = CGRectMake(0,0,self.frame.size.width / _accessoryView.subviews.count, 40);
   for (UIView* v in _accessoryView.subviews) {

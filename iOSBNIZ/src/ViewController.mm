@@ -5,7 +5,8 @@
 //  Created by Brian Richardson on 11/11/15.
 
 // TODO:
-//   Restart time button, gesture
+//
+//   Restart time button, gesture (double tap)
 //   Launch screen / icon
 
 #import "ViewController.h"
@@ -560,6 +561,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     return;
 
   _keys.mode = vm.videomode?@"t":@"tyx";
+  _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
 
   _lastPage = vm.visiblepage;
 
