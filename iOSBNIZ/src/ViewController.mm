@@ -69,7 +69,6 @@ static const GLfloat squareVertices[] = {
 }
 
 @property (strong, nonatomic) EAGLContext *context;
-@property (weak, nonatomic) IBOutlet UILabel *debugLabel;
 @property (weak, nonatomic) IBOutlet UITextView *programText;
 @property (weak, nonatomic) IBOutlet UITextView *helpText;
 @property (weak, nonatomic) IBOutlet UIView *loadSaveView;
@@ -92,8 +91,6 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-
-  self.debugLabel.hidden = YES;
 
   [self becomeFirstResponder];
 
@@ -562,7 +559,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   if (vm.visiblepage == _lastPage)
     return;
 
-  self.debugLabel.text = vm.videomode?@"t":@"tyx";
+  _keys.mode = vm.videomode?@"t":@"tyx";
 
   _lastPage = vm.visiblepage;
 
@@ -669,7 +666,7 @@ void checkmediaformats()
   {
     vm.videomode=1;
     NSLog(@"switched to t-video (sp changed by %d with %d w)\n",
-          vm.spchange[0],vm.wcount);
+          vm.spchange[0],vm.wcount[0]);
   }
   else if((vm.videomode==1) && (vm.spchange[0]+vm.wcount[0]*2==1))
   {

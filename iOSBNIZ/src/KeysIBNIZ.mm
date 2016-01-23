@@ -28,6 +28,7 @@ struct opcode_t opcodes[] = {
   { "8", "loadimm", "(-- val)" },
   { "9", "loadimm", "(-- val)" },
   { "A", "loadimm", "(-- val)" },
+  
   { "B", "loadimm", "(-- val)" },
   { "C", "loadimm", "(-- val)" },
   { "D", "loadimm", "(-- val)" },
@@ -106,6 +107,7 @@ struct opcode_t opcodes[] = {
   int _keyboardState;
   UILabel* _helpLabel;
   NSTimer* _helpTimer;
+  UILabel* _modeLabel;
 }
 
 @end
@@ -179,7 +181,8 @@ struct opcode_t opcodes[] = {
   IBNIZButton* btn;
   
   btn = [[IBNIZButton alloc] initWithFrame:r];
-  [btn setTitle:@"Toggle KB" forState:UIControlStateNormal];
+  NSString* toggle = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ? @"Toggle KB" : @"KB";
+  [btn setTitle:toggle forState:UIControlStateNormal];
   [btn addTarget:self action:@selector(toggleKeys:) forControlEvents:UIControlEventTouchUpInside];
   [_accessoryView addSubview:btn];
   
@@ -195,6 +198,21 @@ struct opcode_t opcodes[] = {
   btn.tag = 1;
   [btn addTarget:self action:@selector(valueChange:) forControlEvents:UIControlEventTouchUpInside];
   [_accessoryView addSubview:btn];
+  
+  r.origin.x += r.size.width;
+  _modeLabel = [[UILabel alloc] initWithFrame:r];
+  _modeLabel.backgroundColor = [UIColor blackColor];
+  _modeLabel.textColor = [UIColor whiteColor];
+  _modeLabel.font = [UIFont fontWithName:@"C64ProMono" size:20];
+  [_accessoryView addSubview:_modeLabel];
+}
+
+- (void) setMode:(NSString *)mode {
+  _mode = mode;
+  if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
+    _modeLabel.text = [NSString stringWithFormat:@"  MODE: %@", mode];
+  else
+    _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
 }
 
 - (void) setTextView:(UITextView *)textView {
@@ -221,6 +239,12 @@ struct opcode_t opcodes[] = {
   for (UIView* v in _commonKeys) {
     v.frame = commonRect;
     commonRect.origin.x += commonSz.width;
+  }
+  
+  CGRect r = CGRectMake(0,0,self.frame.size.width / _accessoryView.subviews.count, 40);
+  for (UIView* v in _accessoryView.subviews) {
+    v.frame = r;
+    r.origin.x += r.size.width;
   }
 }
 

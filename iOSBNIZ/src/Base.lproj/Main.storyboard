@@ -17,15 +17,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KJo-Hb-EeA">
-                                <rect key="frame" x="14" y="526" width="547" height="66"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="66" id="deb-PH-KBe"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m32-gv-aO9">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -133,7 +124,6 @@
                     </glkView>
                     <connections>
                         <outlet property="blankView" destination="m32-gv-aO9" id="Azp-a8-YXc"/>
-                        <outlet property="debugLabel" destination="KJo-Hb-EeA" id="Tk7-bg-0S0"/>
                         <outlet property="filesTableView" destination="BVJ-wc-eMq" id="8Uz-U3-Bl7"/>
                         <outlet property="helpText" destination="Scq-ya-umY" id="FcL-2V-qyE"/>
                         <outlet property="loadSaveView" destination="LwU-E1-zyz" id="NlF-wb-UcW"/>

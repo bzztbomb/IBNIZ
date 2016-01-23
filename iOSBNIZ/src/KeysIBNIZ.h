@@ -12,5 +12,6 @@
 
 @property (weak, nonatomic) UITextView* textView;
 @property (nonatomic, copy) void (^changed)();
+@property (assign, nonatomic) NSString* mode;
 
 @end
