@@ -123,7 +123,10 @@ struct opcode_t opcodes[] = {
     [self createKeys];
     [self createAccessoryView];
     _keyboardState = 0;
-    _helpLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 300, 20)];
+    _helpLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 300, 60)];
+    _helpLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _helpLabel.numberOfLines = 0;
+    _helpLabel.textColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     _helpLabel.backgroundColor = [UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0];
     _helpLabel.hidden = YES;
     [self addSubview:_helpLabel];
@@ -299,9 +302,13 @@ struct opcode_t opcodes[] = {
 }
 
 - (void) buttonDown:(IBNIZButton*) sender {
+  _helpLabel.hidden = YES;
   _helpLabel.text = [NSString stringWithFormat:@"%s %s", opcodes[sender.tag].name, opcodes[sender.tag].description];
   CGRect r = _helpLabel.frame;
   r.origin.x = sender.frame.origin.x;
+  if (r.origin.x + r.size.width > self.frame.size.width) {
+    r.origin.x = self.frame.size.width - r.size.width;
+  }
   r.origin.y = sender.frame.origin.y - r.size.height;
   _helpLabel.frame = r;
 
