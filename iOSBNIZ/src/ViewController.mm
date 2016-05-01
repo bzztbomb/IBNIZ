@@ -5,7 +5,21 @@
 //  Created by Brian Richardson on 11/11/15.
 
 // TODO:
+//  Scrolling keyboard
 //  Launch screen / icon
+/*
+\ iris
+1* d* x 2* d* + q x p 1 - <
+
+w
+
+\ outside of eye
+2* d* x 2* d* + q x p 1 - <
+
+\cosmic
+^
+*/
+
 
 #import "ViewController.h"
 #import <OpenGLES/ES2/glext.h>

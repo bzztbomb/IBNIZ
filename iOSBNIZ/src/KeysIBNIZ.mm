@@ -103,8 +103,9 @@ struct opcode_t opcodes[] = {
 @interface KeysIBNIZ () <UITextViewDelegate> {
   NSArray<UIView*>* _pages;
   NSArray<UIView*>* _commonKeys;
+  UIScrollView* _scroll;
   UIView* _accessoryView; // for keyboard toggle
-  int _keyboardState;
+  bool _ibnizKeyboard;
   UILabel* _helpLabel;
   NSTimer* _helpTimer;
   UILabel* _modeLabel;
@@ -120,9 +121,16 @@ struct opcode_t opcodes[] = {
   self = [super initWithFrame:frame];
   if (self) {
     self.backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
+    CGRect r = frame;
+    r.origin = CGPointMake(0,0);
+    _scroll = [[UIScrollView alloc] initWithFrame:r];
+    CGSize sz = frame.size;
+    sz.height *= 2;
+    _scroll.contentSize = sz;
+    [self addSubview:_scroll];
     [self createKeys];
     [self createAccessoryView];
-    _keyboardState = 0;
+    _ibnizKeyboard = true;
     _helpLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 300, 60)];
     _helpLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _helpLabel.numberOfLines = 0;
@@ -130,6 +138,8 @@ struct opcode_t opcodes[] = {
     _helpLabel.backgroundColor = [UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0];
     _helpLabel.hidden = YES;
     [self addSubview:_helpLabel];
+    
+    
   }
   return self;
 }
@@ -157,9 +167,8 @@ struct opcode_t opcodes[] = {
   }
   
   _pages = @[page0, page1];
-  page1.hidden = YES;
   for (UIView* v in _pages) {
-    [self addSubview:v];
+    [_scroll addSubview:v];
   }
 
   CGRect buttonRect = CGRectMake(0, 0, 10, 10);
@@ -237,7 +246,11 @@ struct opcode_t opcodes[] = {
 - (void) layoutSubviews {
   [super layoutSubviews];
   const CGSize sz = self.frame.size;
+  
   CGRect pageRect = CGRectMake(0, 0, sz.width, sz.height);
+  _scroll.frame = pageRect;
+  _scroll.contentSize = CGSizeMake(sz.width, sz.height * 2);
+  
   for (UIView* page in _pages) {
     page.frame = pageRect;
     CGRect r = CGRectMake(0, 0, sz.width / 10, sz.height / 4);
@@ -250,6 +263,12 @@ struct opcode_t opcodes[] = {
       }
     }
   }
+  // Slap page two below
+  UIView* page2 = [_pages objectAtIndex:1];
+  CGRect p2rect = page2.frame;
+  p2rect.origin.y = p2rect.size.height;
+  page2.frame = p2rect;
+  
   CGSize commonSz = CGSizeMake((sz.width / 2) / _commonKeys.count, sz.height / 4);
   CGRect commonRect = CGRectMake(sz.width / 2, commonSz.height * 3, commonSz.width, commonSz.height);
   for (UIView* v in _commonKeys) {
@@ -327,20 +346,8 @@ struct opcode_t opcodes[] = {
 }
 
 - (void) toggleKeys:(IBNIZButton*) sender {
-  _keyboardState++;
-  if (_keyboardState > 2)
-    _keyboardState = 0;
-  switch (_keyboardState) {
-    case 0 :
-    case 1 :
-      for (UIView* v in _pages)
-        v.hidden = !v.hidden;
-      self.textView.inputView = self;
-      break;
-    case 2 :
-      self.textView.inputView = nil;
-      break;
-  }
+  _ibnizKeyboard = !_ibnizKeyboard;
+  self.textView.inputView = _ibnizKeyboard ? self : nil;
   [self.textView reloadInputViews];
 }
 
