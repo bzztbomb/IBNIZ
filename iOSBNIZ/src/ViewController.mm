@@ -150,17 +150,17 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
 
-  // const char* start_program = "ppp AADD.FFFF";
-  // const char* start_program = "^/";
-  // const char* start_program = "^xp";
-  // const char* start_program = "ppp 1111.FFFF";
-  // const char* start_program = "d3r15&*";
-//  const char* start_program = "ppp FFFF.FFFF";
-  const char* start_program = "d3r15&*";
-  self.programText.text = [NSString stringWithFormat:@"%s\n%s",welcometext, start_program];
+  
+  NSString* lastProgram = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastProgram"];
+  if ((lastProgram != nil) && ([lastProgram length] > 0)) {
+    self.programText.text = lastProgram;
+  } else {
+    const char* start_program = "d3r15&*";
+    self.programText.text = [NSString stringWithFormat:@"%s\n%s",welcometext, start_program];
+  }
 
   vm_init();
-  vm_compile(start_program);
+  vm_compile([self.programText.text UTF8String]);
   vm_init();
   [_audioController startAUGraph];
 
@@ -244,6 +244,8 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   NSString* str = self.programText.text;
   vm_compile([str UTF8String]);
   vm_init();
+  
+  [[NSUserDefaults standardUserDefaults] setValue:str forKey:@"LastProgram"];
 //  reset_start();
 }
 
