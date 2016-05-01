@@ -28,12 +28,12 @@ struct opcode_t opcodes[] = {
   { "8", "loadimm", "(-- val)" },
   { "9", "loadimm", "(-- val)" },
   { "A", "loadimm", "(-- val)" },
-  
   { "B", "loadimm", "(-- val)" },
   { "C", "loadimm", "(-- val)" },
   { "D", "loadimm", "(-- val)" },
   { "E", "loadimm", "(-- val)" },
   { "F", "loadimm", "(-- val)" },
+  { ".", "loadimm", "(-- val)" },
   // ARITHMETIC
   { "+", "add",    "(a b -- a+b)" },
   { "-", "sub",    "(a b -- a-b)" },
@@ -92,7 +92,7 @@ struct opcode_t opcodes[] = {
   { "$", "startdata", "end code segment, start data segment" },
   { "b", "binary",      "sets digit length to 1 bit" },
   { "q", "quarternary", "sets digit length to 2 bits" },
-  { "o", "octal",       "sets digit length to 3 bits" },
+//  { "o", "octal",       "sets digit length to 3 bits" },
   { "h", "hexadecimal", "sets digit length to 4 bits (default)" }
   // META
 //  { "\\", "comment", "ignore characters in source code until newline" },
