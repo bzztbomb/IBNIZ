@@ -241,10 +241,7 @@ struct opcode_t opcodes[] = {
 
 - (void) setMode:(NSString *)mode {
   _mode = mode;
-  if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
-    _modeLabel.text = [NSString stringWithFormat:@"  MODE: %@", mode];
-  else
-    _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
+  _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
 }
 
 - (void) setTime:(NSString *)time {
@@ -330,12 +327,14 @@ struct opcode_t opcodes[] = {
 - (void) buttonDown:(IBNIZButton*) sender {
   _helpLabel.hidden = YES;
   _helpLabel.text = [NSString stringWithFormat:@"%s %s", opcodes[sender.tag].name, opcodes[sender.tag].description];
+  CGRect ref = [_helpLabel.superview convertRect:sender.frame fromView:sender.superview];
+  
   CGRect r = _helpLabel.frame;
-  r.origin.x = sender.frame.origin.x;
+  r.origin.x = ref.origin.x;
   if (r.origin.x + r.size.width > self.frame.size.width) {
     r.origin.x = self.frame.size.width - r.size.width;
   }
-  r.origin.y = sender.frame.origin.y - r.size.height;
+  r.origin.y = ref.origin.y - r.size.height;
   _helpLabel.frame = r;
 
   [_helpTimer invalidate];
