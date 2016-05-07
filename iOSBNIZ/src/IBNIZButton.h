@@ -10,6 +10,8 @@
 
 @interface IBNIZButton : UIButton
 
+@property (assign, nonatomic) bool lightColor;
+
 @end
 
 @interface IBNIZLabel : UILabel

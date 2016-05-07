@@ -15,6 +15,10 @@ struct opcode_t {
   const char* description;
 };
 
+char NEWLINE = 0xFF;
+char BLANK_SPACE = 0xFE;
+char TOGGLE_COLOR = 0xFD;
+
 struct opcode_t opcodes[] = {
   // Immediates
   { "0", "loadimm", "(-- val)" },
@@ -34,7 +38,11 @@ struct opcode_t opcodes[] = {
   { "E", "loadimm", "(-- val)" },
   { "F", "loadimm", "(-- val)" },
   { ".", "loadimm", "(-- val)" },
+  { ",", "separator", ""},
+  { &BLANK_SPACE, "", "" },
+  { "\\", "comment", "ignore characters in source code until newline" },
   // ARITHMETIC
+  { &TOGGLE_COLOR, "", "" },
   { "+", "add",    "(a b -- a+b)" },
   { "-", "sub",    "(a b -- a-b)" },
   { "*", "mul",    "(a b -- a*b)" },
@@ -47,11 +55,13 @@ struct opcode_t opcodes[] = {
   { "r", "right",  "(a b -- a ROR b)" },
   { "l", "left",   "(a b -- a << b)" },
   { "~", "neg",    "(a -- NOT a)" },
+  { &NEWLINE, "",    "" },
   { "s", "sin",    "(a -- sin(a*2PI))" },
   { "a", "atan",   "(a b -- atan2(a,b)/2PI)" },
   { "<", "isneg",  "(a -- a if a<0, else 0)" },
   { ">", "ispos",  "(a -- a if a>0, else 0)" },
   { "=", "iszero", "(a -- 1 if a==0, else 0)" },
+  { &TOGGLE_COLOR, "", "" },
   // STACK MANIPULATION
   { "d", "dup",      "(a -- a a)" },
   { "p", "pop",      "(a --)           same as Forth's DROP" },
@@ -59,17 +69,21 @@ struct opcode_t opcodes[] = {
   { "v", "trirot",   "(a b c -- b c a) same as Forth's ROT" },
   { ")", "pick",     "(i -- val)       load value from STACK[top-1-i]" },
   { "(", "bury",     "(val i --)       store value to STACK[top-2-i]" },
+  { &TOGGLE_COLOR, "", "" },
   // EXTERIOR LOOP
   { "M", "mediaswitch", "switches between audio and video context" },
   { "w", "whereami",    "pushes exterior loop variable(s) on stack" },
   { "T", "terminate",   "stops program execution" },
+  { &TOGGLE_COLOR, "", "" },
   // MEMORY MANIPULATION
   { "@", "load",  "(addr -- val)" },
   { "!", "store", "(val addr --)" },
+  { &TOGGLE_COLOR, "", "" },
   // CONDITIONALS
   { "?", "if",    "(cond --) ; if cond==0, skip until 'else' or 'endif'" },
   { ":", "else",  "skip until after next 'endif'" },
   { ";", "endif", "nop; marks end of conditional block when skipping" },
+  { &TOGGLE_COLOR, "", "" },
   // LOOPS
   { "X", "times",  "(i0 --) loop i0 times (push i0 and insptr on rstack)" },
   { "L", "loop",   "        decrement RSTACK[top-1], jump back if non-0" },
@@ -78,30 +92,31 @@ struct opcode_t opcodes[] = {
   { "[", "do",     "        begin loop (push insptr on rstack)" },
   { "]", "while",  "(cond --) jump back if cond!=0" },
   { "J", "jump",   "(v --)  set instruction pointer to value v" },
+  { &TOGGLE_COLOR, "", "" },
   // SUBROUTINES
   { "{", "defsub",   "(i --)  define subroutine (store pointer to MEM[i])" },
   { "}", "return",   "        end of subroutine; pop insptr from rstack" },
   { "V", "visit",    "(i --)  visit subroutine pointed to by MEM[i]" },
+  { &TOGGLE_COLOR, "", "" },
   // RETURN STACK MANIP
   { "R", "retaddr",  "(-- val)   (val --)     moves from rstack to stack" },
   { "P", "pushtors", "(val --)  (-- val)     moves from stack to rstack" },
+  { &TOGGLE_COLOR, "", "" },
   // USER INPUT
   { "U", "userin", "(-- inword)     get data from input device" },
+  { &TOGGLE_COLOR, "", "" },
+  { &NEWLINE, "",    "" },
   // DATA SEGMENT
   { "G", "getdata", "(numbits -- data)" },
   { "$", "startdata", "end code segment, start data segment" },
   { "b", "binary",      "sets digit length to 1 bit" },
   { "q", "quarternary", "sets digit length to 2 bits" },
-//  { "o", "octal",       "sets digit length to 3 bits" },
-  { "h", "hexadecimal", "sets digit length to 4 bits (default)" }
-  // META
-//  { "\\", "comment", "ignore characters in source code until newline" },
-//  { " ", "separator", ""},
-//  { ",", "separator", ""},
+  { "o", "octal",       "sets digit length to 3 bits" },
+  { "h", "hexadecimal", "sets digit length to 4 bits (default)" },
+  { nullptr, "", "" }
 };
 
 @interface KeysIBNIZ () <UITextViewDelegate> {
-  NSArray<UIView*>* _pages;
   NSArray<UIView*>* _commonKeys;
   UIScrollView* _scroll;
   UIView* _accessoryView; // for keyboard toggle
@@ -124,8 +139,9 @@ struct opcode_t opcodes[] = {
     CGRect r = frame;
     r.origin = CGPointMake(0,0);
     _scroll = [[UIScrollView alloc] initWithFrame:r];
+    _scroll.pagingEnabled = YES;
     CGSize sz = frame.size;
-    sz.height *= 2;
+    sz.height *= 3;
     _scroll.contentSize = sz;
     [self addSubview:_scroll];
     [self createKeys];
@@ -148,29 +164,27 @@ struct opcode_t opcodes[] = {
 // backspace, change kb, val up, val down
 
 - (void) createKeys {
-  CGRect pageRect = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-  UIView* page0 = [[UIView alloc] initWithFrame:pageRect];
-  UIView* page1 = [[UIView alloc] initWithFrame:pageRect];
-  
-  for (int i = 0; i < 66; i++) {
+  bool lightColor = false;
+  for (int i = 0; opcodes[i].symbol != nullptr; i++) {
+    if (opcodes[i].symbol == &TOGGLE_COLOR) {
+      lightColor = !lightColor;
+      continue;
+    }
     CGRect buttonRect = CGRectMake(0, 0, 10, 10);
     IBNIZButton* btn = [[IBNIZButton alloc] initWithFrame:buttonRect];
-    [btn setTitle:[NSString stringWithUTF8String:opcodes[i].symbol] forState:UIControlStateNormal];
-    [btn addTarget:self action:@selector(buttonHit:) forControlEvents:UIControlEventTouchUpInside];
-    [btn addTarget:self action:@selector(buttonDown:) forControlEvents:UIControlEventTouchDown];
-    [btn addTarget:self action:@selector(hideHelp:) forControlEvents:UIControlEventTouchUpOutside];
+    btn.lightColor = lightColor;
+    if (opcodes[i].symbol != &NEWLINE && opcodes[i].symbol != &BLANK_SPACE) {
+      [btn setTitle:[NSString stringWithUTF8String:opcodes[i].symbol] forState:UIControlStateNormal];
+      [btn addTarget:self action:@selector(buttonHit:) forControlEvents:UIControlEventTouchUpInside];
+      [btn addTarget:self action:@selector(buttonDown:) forControlEvents:UIControlEventTouchDown];
+      [btn addTarget:self action:@selector(hideHelp:) forControlEvents:UIControlEventTouchUpOutside];
+    } else {
+      btn.hidden = YES; // CHEESE!
+    }
     btn.tag = i;
-    if (i <= 32)
-      [page0 addSubview:btn];
-    else
-      [page1 addSubview:btn];
+    [_scroll addSubview:btn];
   }
   
-  _pages = @[page0, page1];
-  for (UIView* v in _pages) {
-    [_scroll addSubview:v];
-  }
-
   CGRect buttonRect = CGRectMake(0, 0, 10, 10);
   _timeButton = [[IBNIZButton alloc] initWithFrame:buttonRect];
   _timeButton.titleLabel.font = [UIFont fontWithName:@"C64ProMono" size:10];
@@ -249,25 +263,18 @@ struct opcode_t opcodes[] = {
   
   CGRect pageRect = CGRectMake(0, 0, sz.width, sz.height);
   _scroll.frame = pageRect;
-  _scroll.contentSize = CGSizeMake(sz.width, sz.height * 2);
+  _scroll.contentSize = CGSizeMake(sz.width, sz.height * 3);
   
-  for (UIView* page in _pages) {
-    page.frame = pageRect;
-    CGRect r = CGRectMake(0, 0, sz.width / 10, sz.height / 4);
-    for (UIView* key in page.subviews) {
-      key.frame = r;
-      r.origin.x += r.size.width;
-      if (r.origin.x + r.size.width > sz.width) {
-        r.origin.x = 0;
-        r.origin.y += r.size.height;
-      }
+  CGRect r = CGRectMake(0, 0, sz.width / 10, sz.height / 4);
+  for (UIView* key in _scroll.subviews) {
+    key.frame = r;
+    r.origin.x += r.size.width;
+    if (r.origin.x + r.size.width > sz.width || opcodes[key.tag].symbol == &NEWLINE) {
+      r.origin.x = 0;
+      r.origin.y += r.size.height;
     }
   }
-  // Slap page two below
-  UIView* page2 = [_pages objectAtIndex:1];
-  CGRect p2rect = page2.frame;
-  p2rect.origin.y = p2rect.size.height;
-  page2.frame = p2rect;
+//  _scroll.contentSize = CGSizeMake(sz.width, r.origin.y + r.size.height);
   
   CGSize commonSz = CGSizeMake((sz.width / 2) / _commonKeys.count, sz.height / 4);
   CGRect commonRect = CGRectMake(sz.width / 2, commonSz.height * 3, commonSz.width, commonSz.height);
@@ -280,7 +287,7 @@ struct opcode_t opcodes[] = {
   commonRect.origin.x -= commonRect.size.width;
   _timeButton.frame = commonRect;
   
-  CGRect r = CGRectMake(0,0,self.frame.size.width / _accessoryView.subviews.count, 40);
+  r = CGRectMake(0,0,self.frame.size.width / _accessoryView.subviews.count, 40);
   for (UIView* v in _accessoryView.subviews) {
     v.frame = r;
     r.origin.x += r.size.width;

@@ -31,6 +31,12 @@
   self.layer.borderWidth = 2;
 }
 
+-(void) setLightColor:(bool)lightColor {
+  _lightColor = lightColor;
+  UIColor* c = lightColor ? [UIColor colorWithWhite:0.2 alpha:1.0] : [UIColor blackColor];
+  self.layer.backgroundColor = c.CGColor;
+}
+
 @end
 
 @implementation IBNIZLabel
@@ -54,6 +60,7 @@
   self.textColor = [UIColor whiteColor];
   self.font = [UIFont fontWithName:@"C64ProMono" size:20];
 }
+
 
 
 @end
