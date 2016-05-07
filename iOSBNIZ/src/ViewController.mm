@@ -306,9 +306,10 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   CGSize sz = recognizer.view.frame.size;
   coord.x = (coord.x / sz.width) * 255;
   coord.y = (coord.y / sz.height) * 255;
-  uint32_t x = ((uint32_t) coord.x) << 8;
-  uint32_t y = ((uint32_t) coord.y);
+  uint32_t x = ((uint32_t) coord.x);
+  uint32_t y = ((uint32_t) coord.y) << 8;
   vm.userinput = y | x;
+//  NSLog(@"x: %f, y: %f", coord.x, coord.y);
 }
 
 - (BOOL) canBecomeFirstResponder {
