@@ -21,6 +21,7 @@
 		C8BA03121BF3C5780023B683 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C8BA03101BF3C5780023B683 /* LaunchScreen.storyboard */; };
 		C8BA031C1BF3C6F80023B683 /* compiler.c in Sources */ = {isa = PBXBuildFile; fileRef = C8BA031A1BF3C6F80023B683 /* compiler.c */; };
 		C8BA031D1BF3C6F80023B683 /* vm_slow.c in Sources */ = {isa = PBXBuildFile; fileRef = C8BA031B1BF3C6F80023B683 /* vm_slow.c */; };
+		C8C481CD1CDD7B2800E3087D /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8C481CC1CDD7B2800E3087D /* Accelerate.framework */; };
 		C8F0A4B81C057486002CCC75 /* AudioController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B01C057486002CCC75 /* AudioController.mm */; };
 		C8F0A4B91C057486002CCC75 /* CADebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B11C057486002CCC75 /* CADebugMacros.cpp */; };
 		C8F0A4BA1C057486002CCC75 /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B61C057486002CCC75 /* CAStreamBasicDescription.cpp */; };
@@ -50,6 +51,7 @@
 		C8BA03131BF3C5780023B683 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C8BA031A1BF3C6F80023B683 /* compiler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compiler.c; sourceTree = "<group>"; };
 		C8BA031B1BF3C6F80023B683 /* vm_slow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vm_slow.c; sourceTree = "<group>"; };
+		C8C481CC1CDD7B2800E3087D /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		C8F0A4AF1C057486002CCC75 /* AudioController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioController.h; sourceTree = "<group>"; };
 		C8F0A4B01C057486002CCC75 /* AudioController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioController.mm; sourceTree = "<group>"; };
 		C8F0A4B11C057486002CCC75 /* CADebugMacros.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CADebugMacros.cpp; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8C481CD1CDD7B2800E3087D /* Accelerate.framework in Frameworks */,
 				C8F0A4C11C05750D002CCC75 /* MediaPlayer.framework in Frameworks */,
 				C8F0A4BE1C0574B3002CCC75 /* AudioToolbox.framework in Frameworks */,
 				C88B08081C00FE0600A18E2C /* OpenGLES.framework in Frameworks */,
@@ -154,6 +157,7 @@
 		C8F0A4BF1C0574C9002CCC75 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C8C481CC1CDD7B2800E3087D /* Accelerate.framework */,
 				C8F0A4C01C05750D002CCC75 /* MediaPlayer.framework */,
 				C8F0A4BD1C0574B3002CCC75 /* AudioToolbox.framework */,
 				C88B08071C00FE0600A18E2C /* OpenGLES.framework */,

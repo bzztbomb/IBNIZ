@@ -22,7 +22,10 @@ w
 
 
 #import "ViewController.h"
+
 #import <OpenGLES/ES2/glext.h>
+#import <Accelerate/Accelerate.h>
+
 #import "AudioController.h"
 #import "KeysIBNIZ.h"
 
@@ -741,13 +744,13 @@ void scheduler_check()
 void audio_callback(unsigned int frames, float ** input_buffer, float ** output_buffer, void * user_data) {
   in_audio = 1;
   uint32_t aupp0=auplayptr;
+  
+  float buff[frames];
+  
   for(int i = 0; i < frames; i++)
   {
     int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
-    float val = (float) ival / (float) INT16_MAX;
-//    val *= 0.0f;
-    output_buffer[0][i] = val;
-    output_buffer[1][i] = val;
+    buff[i] = ival;
     auplayptr+=0x164A9; /* (61440<<16)/44100 */
     // todo later: some interpolation/filtering
   }
@@ -756,5 +759,8 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     auplaytime+=64*65536;
   }
   in_audio = 0;
+  float divisor = INT16_MAX;
+  vDSP_vsdiv(buff, 1, &divisor, output_buffer[0], 1, 512);
+  memcpy(output_buffer[1], output_buffer[0], frames * sizeof(float));
 }
 
