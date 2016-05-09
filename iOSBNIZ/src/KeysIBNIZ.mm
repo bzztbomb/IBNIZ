@@ -125,6 +125,7 @@ struct opcode_t opcodes[] = {
   NSTimer* _helpTimer;
   UILabel* _modeLabel;
   IBNIZButton* _timeButton;
+  UILabel* _debugLabel;
 }
 
 @end
@@ -207,6 +208,11 @@ struct opcode_t opcodes[] = {
   for (UIView* v in _commonKeys)
     [self addSubview:v];
   
+  _debugLabel = [[IBNIZLabel alloc] initWithFrame:buttonRect];
+  _debugLabel.numberOfLines = 0;
+  _debugLabel.text = @"FPS: 60\nMOPS: 2309234\n";
+  [_scroll addSubview:_debugLabel];
+  
   [self layoutSubviews];
 }
 
@@ -249,6 +255,11 @@ struct opcode_t opcodes[] = {
   [_timeButton setTitle:time forState:UIControlStateNormal];
 }
 
+- (void) setDebugString:(NSString *)debugString {
+  _debugString = debugString;
+  _debugLabel.text = debugString;
+}
+
 - (void) setTextView:(UITextView *)textView {
   _textView = textView;
   _textView.delegate = self;
@@ -271,7 +282,11 @@ struct opcode_t opcodes[] = {
       r.origin.y += r.size.height;
     }
   }
-//  _scroll.contentSize = CGSizeMake(sz.width, r.origin.y + r.size.height);
+  r.origin.y += r.size.height;
+  r.origin.x = 0;
+  r.size.width = sz.width;
+  r.size.height *= 2;
+  _debugLabel.frame = r;
   
   CGSize commonSz = CGSizeMake((sz.width / 2) / _commonKeys.count, sz.height / 4);
   CGRect commonRect = CGRectMake(sz.width / 2, commonSz.height * 3, commonSz.width, commonSz.height);

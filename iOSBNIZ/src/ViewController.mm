@@ -82,6 +82,9 @@ static const GLfloat squareVertices[] = {
   NSArray<NSString *>* _files;
   NSMutableArray<UIGestureRecognizer*>* _pans;
   KeysIBNIZ* _keys;
+  
+  size_t _framecounter;
+  size_t _cyclecounter;
 }
 
 @property (strong, nonatomic) EAGLContext *context;
@@ -151,7 +154,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   config.userdata = (void*) CFBridgingRetain(self);
   [_audioController initializeAUGraph:config];
 
-  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
+//  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
 
   
   NSString* lastProgram = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastProgram"];
@@ -190,6 +193,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   };
   _keys.resetTimeRequested = ^() {
     reset_start();
+    _framecounter = _cyclecounter = 0;
   };
   self.programText.inputView = _keys;
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:16];
@@ -228,14 +232,14 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 }
 
 - (void)timerFired:(NSTimer*)timer {
-  checkmediaformats();
-  scheduler_check();
+//  checkmediaformats();
+//  scheduler_check();
 
   // Run until we have a new frame or 1/60 of a second has passed.  Seems to be ok, can improve later.
   uint32_t prevT = getticks();
   char old_page = vm.visiblepage;
-  while (getticks() - prevT < (1000/70) && old_page == vm.visiblepage) {
-    vm_run();
+  while ((getticks() - prevT < (1000.0/15.0)) && (old_page == vm.visiblepage)) {
+    _cyclecounter += vm_run();
     checkmediaformats();
     scheduler_check();
   }
@@ -294,6 +298,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 - (void) restartTime:(id) sender {
   reset_start();
+  _cyclecounter = _framecounter = 0;
 }
 
 - (void) swipeLeft:(UISwipeGestureRecognizer*) recognizer {
@@ -584,22 +589,38 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 }
 
 #pragma - mark mainloop
-- (void) update {
-  if (vm.visiblepage == _lastPage)
-    return;
+uint32_t getcorrectedticks();
 
-  _keys.mode = vm.videomode?@"t":@"tyx";
+- (void) update {
   _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
+//  _keys.time = [NSString stringWithFormat:@"%d", getcorrectedticks()&0xFFFF];
+  
+  _keys.mode = vm.videomode?@"t":@"tyx";
+
+  if (vm.visiblepage == _lastPage) {
+    [self updateDebugLabel];
+    return;
+  }
 
   _lastPage = vm.visiblepage;
+  _framecounter++;
 
+  [self updateDebugLabel];
+  
   uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
   glBindTexture(GL_TEXTURE_2D, _page);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, s);
 }
 
+- (void) updateDebugLabel {
+  float secs = getticks() / 1000.0;
+  NSString* info = [NSString stringWithFormat:@"FPS: %f\nMOPS: %f", _framecounter / secs, _cyclecounter / (secs*1000000)];
+  _keys.debugString = info;
+}
+
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
 {
+  [self timerFired:nil];
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -677,7 +698,12 @@ uint32_t gettimevalue()
 
 void waitfortimechange()
 {
-  // TODO: Implement!
+//  int wait=200;
+//  int f0=gettimevalue();
+//  int nexttickval=((f0+1)*50)/3+0;
+//  wait=nexttickval-getcorrectedticks()+1;
+//  if(wait<1) wait=1; else if(wait>17) wait=17;
+//  [NSThread sleepForTimeInterval:wait / 1000.0];
 }
 
 void checkmediaformats()
