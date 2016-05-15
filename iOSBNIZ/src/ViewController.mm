@@ -4,9 +4,6 @@
 //
 //  Created by Brian Richardson on 11/11/15.
 
-// TODO:
-//  Scrolling keyboard
-//  Launch screen / icon
 /*
 \ iris
 1* d* x 2* d* + q x p 1 - <
@@ -19,7 +16,6 @@ w
 \cosmic
 ^
 */
-
 
 #import "ViewController.h"
 
@@ -44,6 +40,8 @@ void reset_start();
 void checkmediaformats();
 void scheduler_check();
 int getticks();
+
+static std::atomic_bool audio_off;
 
 enum
 {
@@ -233,7 +231,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   NSString* str = self.programText.text;
   vm_compile([str UTF8String]);
   vm_init();
-  
+  audio_off = false;
   [[NSUserDefaults standardUserDefaults] setValue:str forKey:@"LastProgram"];
 }
 
@@ -653,7 +651,7 @@ uint32_t getcorrectedticks();
 static CFTimeInterval start = 0;
 static uint32_t auplayptr = 0;
 static uint32_t auplaytime = 0;
-static volatile int in_audio = 0;
+static std::atomic_bool in_audio;
 
 void reset_start() {
   for (; in_audio; ) {} // try an wait for the buffer to get played
@@ -696,9 +694,8 @@ void checkmediaformats()
   if(vm.wcount[1]!=0 && vm.spchange[1]<=0)
   {
     NSLog(@"audio stack underrun; shut it off!\n");
-//    ui.audio_off=1;
+    audio_off = true;
     vm.spchange[1]=vm.wcount[1]=0;
-//    pauseaudio(1);
   }
 
   if(vm.wcount[0]==0) return;
@@ -753,25 +750,30 @@ void scheduler_check()
 }
 
 void audio_callback(unsigned int frames, float ** input_buffer, float ** output_buffer, void * user_data) {
-  in_audio = 1;
-  uint32_t aupp0=auplayptr;
-  
-  float buff[frames];
-  
-  for(int i = 0; i < frames; i++)
-  {
-    int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
-    buff[i] = ival;
-    auplayptr+=0x164A9; /* (61440<<16)/44100 */
-    // todo later: some interpolation/filtering
+  if (!audio_off) {
+    in_audio = true;
+    uint32_t aupp0=auplayptr;
+    
+    float buff[frames];
+    
+    for(int i = 0; i < frames; i++)
+    {
+      int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
+      buff[i] = ival;
+      auplayptr+=0x164A9; /* (61440<<16)/44100 */
+      // todo later: some interpolation/filtering
+    }
+    if(aupp0>auplayptr)
+    {
+      auplaytime+=64*65536;
+    }
+    in_audio = false;
+    float divisor = INT16_MAX;
+    vDSP_vsdiv(buff, 1, &divisor, output_buffer[0], 1, 512);
+    memcpy(output_buffer[1], output_buffer[0], frames * sizeof(float));
+  } else {
+    memset(output_buffer[0], 0, frames * sizeof(float));
+    memset(output_buffer[1], 0, frames * sizeof(float));
   }
-  if(aupp0>auplayptr)
-  {
-    auplaytime+=64*65536;
-  }
-  in_audio = 0;
-  float divisor = INT16_MAX;
-  vDSP_vsdiv(buff, 1, &divisor, output_buffer[0], 1, 512);
-  memcpy(output_buffer[1], output_buffer[0], frames * sizeof(float));
 }
 
