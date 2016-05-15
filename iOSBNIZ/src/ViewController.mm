@@ -194,6 +194,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   _keys.resetTimeRequested = ^() {
     reset_start();
     _framecounter = _cyclecounter = 0;
+    [weakSelf updateDebugLabel];
   };
   self.programText.inputView = _keys;
   self.programText.font = [UIFont fontWithName:@"C64ProMono" size:16];
@@ -592,20 +593,18 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 uint32_t getcorrectedticks();
 
 - (void) update {
-  _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
-//  _keys.time = [NSString stringWithFormat:@"%d", getcorrectedticks()&0xFFFF];
-  
   _keys.mode = vm.videomode?@"t":@"tyx";
 
   if (vm.visiblepage == _lastPage) {
-    [self updateDebugLabel];
     return;
   }
 
   _lastPage = vm.visiblepage;
   _framecounter++;
 
-  [self updateDebugLabel];
+  if (_framecounter%60==0) {
+    [self updateDebugLabel];
+  }
   
   uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
   glBindTexture(GL_TEXTURE_2D, _page);
@@ -616,6 +615,7 @@ uint32_t getcorrectedticks();
   float secs = getticks() / 1000.0;
   NSString* info = [NSString stringWithFormat:@"FPS: %f\nMOPS: %f", _framecounter / secs, _cyclecounter / (secs*1000000)];
   _keys.debugString = info;
+  _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
@@ -678,7 +678,7 @@ int getticks()
 {
   if (start == 0)
     reset_start();
-  return (CACurrentMediaTime() - start) * 1000.0f;
+  return (CACurrentMediaTime() - start) * 333.0f;
 }
 
 uint32_t getcorrectedticks()
