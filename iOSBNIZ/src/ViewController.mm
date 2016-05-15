@@ -153,9 +153,6 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   config.audio_callback = audio_callback;
   config.userdata = (void*) CFBridgingRetain(self);
   [_audioController initializeAUGraph:config];
-
-//  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(timerFired:) userInfo:nil repeats:YES];
-
   
   NSString* lastProgram = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastProgram"];
   if ((lastProgram != nil) && ([lastProgram length] > 0)) {
@@ -232,29 +229,12 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   return YES;
 }
 
-- (void)timerFired:(NSTimer*)timer {
-//  checkmediaformats();
-//  scheduler_check();
-
-  // Run until we have a new frame or 1/60 of a second has passed.  Seems to be ok, can improve later.
-  uint32_t prevT = getticks();
-  char old_page = vm.visiblepage;
-  while ((getticks() - prevT < (1000.0/15.0)) && (old_page == vm.visiblepage)) {
-    _cyclecounter += vm_run();
-    checkmediaformats();
-    scheduler_check();
-  }
-  [self update];
-  vm.specialcontextstep=3;
-}
-
 - (void)programChanged:(NSNotification*)sender {
   NSString* str = self.programText.text;
   vm_compile([str UTF8String]);
   vm_init();
   
   [[NSUserDefaults standardUserDefaults] setValue:str forKey:@"LastProgram"];
-//  reset_start();
 }
 
 - (void) animateIt:(int) direction {
@@ -592,27 +572,10 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 #pragma - mark mainloop
 uint32_t getcorrectedticks();
 
-- (void) update {
-  _keys.mode = vm.videomode?@"t":@"tyx";
-
-  if (vm.visiblepage == _lastPage) {
-    return;
-  }
-
-  _lastPage = vm.visiblepage;
-  _framecounter++;
-
-  if (_framecounter%60==0) {
-    [self updateDebugLabel];
-  }
-  
-  uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
-  glBindTexture(GL_TEXTURE_2D, _page);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, s);
-}
-
 - (void) updateDebugLabel {
   float secs = getticks() / 1000.0;
+  if (secs == 0)
+    secs = 1; // avoid nan
   NSString* info = [NSString stringWithFormat:@"FPS: %f\nMOPS: %f", _framecounter / secs, _cyclecounter / (secs*1000000)];
   _keys.debugString = info;
   _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
@@ -620,7 +583,34 @@ uint32_t getcorrectedticks();
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
 {
-  [self timerFired:nil];
+  // Use GL frame draw to drive IBNIZ VM main loop
+  // Run until we have a new frame or 1/60 of a second has passed.  Seems to be ok, can improve later.
+  uint32_t prevT = getticks();
+  char old_page = vm.visiblepage;
+  while ((getticks() - prevT < (1000.0/15.0)) && (old_page == vm.visiblepage)) {
+    _cyclecounter += vm_run();
+    checkmediaformats();
+    scheduler_check();
+  }
+  
+  // Flip frame if needed
+  if (vm.visiblepage != _lastPage) {
+    _keys.mode = vm.videomode?@"t":@"tyx";
+    _lastPage = vm.visiblepage;
+    _framecounter++;
+    
+    if (_framecounter%20==0) {
+      [self updateDebugLabel];
+    }
+    
+    uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
+    glBindTexture(GL_TEXTURE_2D, _page);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, s);
+  }
+  
+  vm.specialcontextstep=3;
+  
+  
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -698,12 +688,7 @@ uint32_t gettimevalue()
 
 void waitfortimechange()
 {
-//  int wait=200;
-//  int f0=gettimevalue();
-//  int nexttickval=((f0+1)*50)/3+0;
-//  wait=nexttickval-getcorrectedticks()+1;
-//  if(wait<1) wait=1; else if(wait>17) wait=17;
-//  [NSThread sleepForTimeInterval:wait / 1000.0];
+  // Not needed because we ditch when frame changes
 }
 
 void checkmediaformats()

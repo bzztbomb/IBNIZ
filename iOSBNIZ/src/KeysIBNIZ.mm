@@ -246,8 +246,10 @@ struct opcode_t opcodes[] = {
 }
 
 - (void) setMode:(NSString *)mode {
-  _mode = mode;
-  _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
+  if ([mode compare:_mode] != NSOrderedSame) {
+    _mode = mode;
+    _modeLabel.text = [NSString stringWithFormat:@" %@", mode];
+  }
 }
 
 - (void) setTime:(NSString *)time {
