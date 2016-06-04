@@ -1,13 +1,24 @@
 char*welcometext=
   "\n"
   "\n"
-  "\\ IBNIZ 1.1C00-NORELEASE\n"
-  "\\ iOS version 1.0"
-  "\\ \n"
-  "\\ Swipe left for help.\n";
+  "\\IBNIZ\n\\1.1C00-NORELEASE\n"
+  "\\by viznut\n"
+  "\\www.pelulamu.net/viznut/\n\n"
+  "\\iOS\n\\version 1.0\n"
+  "\\port by bzztbomb\n"
+  "\\bzztbomb.com/\n"
+  "\n"
+  "\\Swipe left for help.\n";
 
 char*helpscreen=
  ////////////////////////////////
+"\\IBNIZ\n\\1.1C00-NORELEASE\n"
+"\\by viznut\n"
+"\\www.pelulamu.net/viznut/\n\n"
+"\\iOS\n\\version 1.0\n"
+"\\port by bzztbomb\n"
+"\\bzztbomb.com/\n"
+"\n"
 "IBNIZ quick reference"
 "\n"
 "============= UI ==============="

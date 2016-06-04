@@ -7,12 +7,9 @@
 /*
 \ iris
 1* d* x 2* d* + q x p 1 - <
-
 w
-
 \ outside of eye
 2* d* x 2* d* + q x p 1 - <
-
 \cosmic
 ^
 */
@@ -640,10 +637,17 @@ uint32_t getcorrectedticks();
   CGRect r = [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
   r = [self.view convertRect:r fromView:self.view.window];
   _kbSize.height = self.view.frame.size.height - r.origin.y;
+  
+  CGRect pr = self.programText.frame;
+  pr.size.height = self.view.frame.size.height - _kbSize.height;
+  self.programText.frame = pr;
 }
 
 -(void)keyboardWillBeHidden:(NSNotification*)notification {
   _kbSize = CGSizeMake(0, 0);
+  CGRect pr = self.programText.frame;
+  pr.size.height = self.view.frame.size.height - _kbSize.height;
+  self.programText.frame = pr;
 }
 
 @end
