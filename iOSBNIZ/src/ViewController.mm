@@ -16,8 +16,8 @@ w
 
 #import "ViewController.h"
 
-#import <OpenGLES/ES2/glext.h>
 #import <Accelerate/Accelerate.h>
+#import <OpenGLES/ES2/glext.h>
 
 #import "AudioController.h"
 #import "KeysIBNIZ.h"
@@ -40,21 +40,15 @@ int getticks();
 
 static std::atomic_bool audio_off;
 
-enum
-{
-  UNIFORM_PAGE,
-  UNIFORM_SCALE,
-  UNIFORM_OFFSET,
-  NUM_UNIFORMS
-};
+enum { UNIFORM_PAGE, UNIFORM_SCALE, UNIFORM_OFFSET, NUM_UNIFORMS };
 GLint uniforms[NUM_UNIFORMS];
 
 // PosX,Y / texU,V
 static const GLfloat squareVertices[] = {
-  -1.0f, -1.0f,   0.0f, 1.0f,  // lower left
-  1.0f, -1.0f,   1.0f, 1.0f,   // lower right
-  -1.0f,  1.0f,  0.0f,  0.0f,  // upper left
-  1.0f,  1.0f,   1.0f,  0.0f, // upper right
+    -1.0f, -1.0f, 0.0f, 1.0f, // lower left
+    1.0f,  -1.0f, 1.0f, 1.0f, // lower right
+    -1.0f, 1.0f,  0.0f, 0.0f, // upper left
+    1.0f,  1.0f,  1.0f, 0.0f, // upper right
 };
 
 @interface ViewController () <UITableViewDataSource, UIAlertViewDelegate> {
@@ -67,27 +61,27 @@ static const GLfloat squareVertices[] = {
 
   int _lastPage;
 
-  AudioController* _audioController;
+  AudioController *_audioController;
 
-  NSTimer* _timer;
+  NSTimer *_timer;
   CGSize _kbSize;
-  NSArray<UIView *>* _views;
+  NSArray<UIView *> *_views;
   int _currView;
 
-  NSArray<NSString *>* _files;
-  NSMutableArray<UIGestureRecognizer*>* _pans;
-  KeysIBNIZ* _keys;
-  
+  NSArray<NSString *> *_files;
+  NSMutableArray<UIGestureRecognizer *> *_pans;
+  KeysIBNIZ *_keys;
+
   size_t _framecounter;
   size_t _cyclecounter;
 }
 
-@property (strong, nonatomic) EAGLContext *context;
-@property (weak, nonatomic) IBOutlet UITextView *programText;
-@property (weak, nonatomic) IBOutlet UITextView *helpText;
-@property (weak, nonatomic) IBOutlet UIView *loadSaveView;
-@property (weak, nonatomic) IBOutlet UIView *blankView;
-@property (weak, nonatomic) IBOutlet UITableView *filesTableView;
+@property(strong, nonatomic) EAGLContext *context;
+@property(weak, nonatomic) IBOutlet UITextView *programText;
+@property(weak, nonatomic) IBOutlet UITextView *helpText;
+@property(weak, nonatomic) IBOutlet UIView *loadSaveView;
+@property(weak, nonatomic) IBOutlet UIView *blankView;
+@property(weak, nonatomic) IBOutlet UITableView *filesTableView;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -101,28 +95,38 @@ static const GLfloat squareVertices[] = {
 
 @implementation ViewController
 
-void audio_callback(unsigned int frames, float ** input_buffer, float ** output_buffer, void * user_data);
+void audio_callback(unsigned int frames, float **input_buffer,
+                    float **output_buffer, void *user_data);
 
 - (void)viewDidLoad {
   [super viewDidLoad];
 
   [self becomeFirstResponder];
 
-  _views = @[self.blankView, self.programText, self.helpText, self.loadSaveView];
+  _views =
+      @[ self.blankView, self.programText, self.helpText, self.loadSaveView ];
 
   _pans = [[NSMutableArray alloc] init];
-  for (UIView* v in _views) {
+  for (UIView *v in _views) {
     v.hidden = YES;
-    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(restartTime:)];
+    UITapGestureRecognizer *tap =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(restartTime:)];
     tap.numberOfTouchesRequired = 2;
     [v addGestureRecognizer:tap];
-    UISwipeGestureRecognizer* swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
+    UISwipeGestureRecognizer *swipeLeft =
+        [[UISwipeGestureRecognizer alloc] initWithTarget:self
+                                                  action:@selector(swipeLeft:)];
     swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
     [v addGestureRecognizer:swipeLeft];
-    UISwipeGestureRecognizer* swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeRight:)];
+    UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(swipeRight:)];
     swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
     [v addGestureRecognizer:swipeRight];
-    UIPanGestureRecognizer* panIt = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panning:)];
+    UIPanGestureRecognizer *panIt =
+        [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(panning:)];
     panIt.enabled = NO;
     [v addGestureRecognizer:panIt];
     [_pans addObject:panIt];
@@ -146,15 +150,23 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   config.sampleRate = 44100;
   config.enable_input = false;
   config.audio_callback = audio_callback;
-  config.userdata = (void*) CFBridgingRetain(self);
+  config.userdata = (void *)CFBridgingRetain(self);
   [_audioController initializeAUGraph:config];
-  
-  NSString* lastProgram = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastProgram"];
+
+  NSString *lastProgram =
+      [[NSUserDefaults standardUserDefaults] stringForKey:@"LastProgram"];
   if ((lastProgram != nil) && ([lastProgram length] > 0)) {
     self.programText.text = lastProgram;
   } else {
-    const char* start_program = "d3r15&*";
-    self.programText.text = [NSString stringWithFormat:@"%s\n%s",welcometext, start_program];
+    NSString *name =
+        [[NSBundle mainBundle] pathForResource:@"default_program" ofType:@""];
+    NSString *default_prog =
+        [NSString stringWithContentsOfFile:name
+                                  encoding:NSUTF8StringEncoding
+                                     error:nil];
+
+    self.programText.text =
+        [NSString stringWithFormat:@"%s\n%@", welcometext, default_prog];
   }
 
   vm_init();
@@ -162,24 +174,35 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   vm_init();
   [_audioController startAUGraph];
 
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillBeHidden:) name:UIKeyboardWillHideNotification object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(programChanged:)
-                                               name:UITextViewTextDidChangeNotification
-                                             object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWasShown:)
+             name:UIKeyboardDidShowNotification
+           object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWillBeHidden:)
+             name:UIKeyboardWillHideNotification
+           object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(programChanged:)
+             name:UITextViewTextDidChangeNotification
+           object:nil];
 
-  NSArray* shadows = @[self.programText, self.helpText];
-  for (UITextView* view in shadows) {
-    CALayer* layer = view.layer;
+  NSArray *shadows = @[ self.programText, self.helpText ];
+  for (UITextView *view in shadows) {
+    CALayer *layer = view.layer;
     layer.shadowColor = [[UIColor blackColor] CGColor];
     layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
     layer.shadowOpacity = 1.0f;
     layer.shadowRadius = 2.0f;
   }
-  _keys = [[KeysIBNIZ alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height / 4.0f)];
+  _keys = [[KeysIBNIZ alloc]
+      initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                               self.view.frame.size.height / 4.0f)];
   _keys.textView = self.programText;
-  ViewController* __weak weakSelf = self;
+  ViewController *__weak weakSelf = self;
   _keys.changed = ^() {
     [weakSelf programChanged:nil];
   };
@@ -196,7 +219,11 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   self.filesTableView.backgroundColor = [UIColor clearColor];
 }
 
-- (void) dealloc {
+- (void)viewDidAppear:(BOOL)animated {
+  [self.programText setContentOffset:CGPointZero animated:NO];
+}
+
+- (void)dealloc {
   [self tearDownGL];
 
   if ([EAGLContext currentContext] == self.context) {
@@ -204,8 +231,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   }
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
 
   if ([self isViewLoaded] && ([[self view] window] == nil)) {
@@ -224,22 +250,22 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   return YES;
 }
 
-- (void)programChanged:(NSNotification*)sender {
-  NSString* str = self.programText.text;
+- (void)programChanged:(NSNotification *)sender {
+  NSString *str = self.programText.text;
   vm_compile([str UTF8String]);
   vm_init();
   audio_off = false;
   [[NSUserDefaults standardUserDefaults] setValue:str forKey:@"LastProgram"];
 }
 
-- (void) animateIt:(int) direction {
+- (void)animateIt:(int)direction {
   if ((_currView == 0) && (direction == -1))
     return;
-  if ((_currView == _views.count -1) && (direction == 1))
+  if ((_currView == _views.count - 1) && (direction == 1))
     return;
 
-  UIView* currVisible = _views[_currView];
-  UIView* newView = _views[_currView+direction];
+  UIView *currVisible = _views[_currView];
+  UIView *newView = _views[_currView + direction];
   _currView += direction;
 
   CGFloat xOffset = self.view.frame.size.width;
@@ -254,79 +280,89 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   CGPoint currVisibleOriginal = currVisibleCenter;
   currVisibleCenter.x -= xOffset * direction;
 
-  [UIView animateWithDuration:0.3 animations:^{
-    newView.center = newViewCenter;
-    currVisible.center = currVisibleCenter;
-    newView.alpha = 1.0f;
-    currVisible.alpha = 0.0f;
-  } completion:^(BOOL finished) {
-    currVisible.hidden = YES;
-    currVisible.center = currVisibleOriginal;
-    if (_currView != 1)
-      [self.programText resignFirstResponder];
-    if (_currView == 3) {
-      [self loadFiles];
-      [self.filesTableView reloadData];
-    }
-  }];
-
+  [UIView animateWithDuration:0.3
+      animations:^{
+        newView.center = newViewCenter;
+        currVisible.center = currVisibleCenter;
+        newView.alpha = 1.0f;
+        currVisible.alpha = 0.0f;
+      }
+      completion:^(BOOL finished) {
+        currVisible.hidden = YES;
+        currVisible.center = currVisibleOriginal;
+        if (_currView != 1)
+          [self.programText resignFirstResponder];
+        if (_currView == 3) {
+          [self loadFiles];
+          [self.filesTableView reloadData];
+        }
+      }];
 }
 
-- (void) restartTime:(id) sender {
+- (void)restartTime:(id)sender {
   reset_start();
   _cyclecounter = _framecounter = 0;
 }
 
-- (void) swipeLeft:(UISwipeGestureRecognizer*) recognizer {
+- (void)swipeLeft:(UISwipeGestureRecognizer *)recognizer {
   [self animateIt:1];
 }
 
-- (void) swipeRight:(UISwipeGestureRecognizer*) recognizer {
+- (void)swipeRight:(UISwipeGestureRecognizer *)recognizer {
   [self animateIt:-1];
 }
 
-- (void) panning:(UIPanGestureRecognizer*) recognizer {
+- (void)panning:(UIPanGestureRecognizer *)recognizer {
   CGPoint coord = [recognizer locationInView:recognizer.view];
   CGSize sz = recognizer.view.frame.size;
   coord.x = (coord.x / sz.width) * 255;
   coord.y = (coord.y / sz.height) * 255;
-  uint32_t x = ((uint32_t) coord.x);
-  uint32_t y = ((uint32_t) coord.y) << 8;
+  uint32_t x = ((uint32_t)coord.x);
+  uint32_t y = ((uint32_t)coord.y) << 8;
   vm.userinput = y | x;
-//  NSLog(@"x: %f, y: %f", coord.x, coord.y);
+  //  NSLog(@"x: %f, y: %f", coord.x, coord.y);
 }
 
-- (BOOL) canBecomeFirstResponder {
+- (BOOL)canBecomeFirstResponder {
   return YES;
 }
 
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
-  if (motion == UIEventSubtypeMotionShake)
-  {
-    for (UIGestureRecognizer* gesture in _pans)
+  if (motion == UIEventSubtypeMotionShake) {
+    for (UIGestureRecognizer *gesture in _pans)
       gesture.enabled = !gesture.enabled;
   }
 }
 
 #pragma mark - File load/save
-- (NSString*) documentDir {
-  NSArray *myPathList =  NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-  NSString* docPath = [myPathList objectAtIndex:0];
+- (NSString *)documentDir {
+  NSArray *myPathList = NSSearchPathForDirectoriesInDomains(
+      NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *docPath = [myPathList objectAtIndex:0];
   return docPath;
 }
 
-- (void) loadFiles {
-  _files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self documentDir] error:nil];
+- (void)loadFiles {
+  NSMutableArray<NSString *> *temp =
+      [NSMutableArray arrayWithArray:@[ @"default_program" ]];
+  [temp addObjectsFromArray:[[NSFileManager defaultManager]
+                                contentsOfDirectoryAtPath:[self documentDir]
+                                                    error:nil]];
+
+  _files = temp;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView
+    numberOfRowsInSection:(NSInteger)section {
   if (!_files)
     [self loadFiles];
   return _files.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-  UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"BasicTableCell"];
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+  UITableViewCell *cell =
+      [tableView dequeueReusableCellWithIdentifier:@"BasicTableCell"];
   cell.layer.backgroundColor = [UIColor blackColor].CGColor;
   cell.layer.borderColor = [UIColor whiteColor].CGColor;
   cell.layer.borderWidth = 2;
@@ -336,17 +372,26 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 }
 
 - (IBAction)loadHit:(id)sender {
-  NSIndexPath* path = [self.filesTableView indexPathForSelectedRow];
+  NSIndexPath *path = [self.filesTableView indexPathForSelectedRow];
   if (path.row >= _files.count)
     return;
-  NSString* name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [_files objectAtIndex:path.row]];
-  self.programText.text = [NSString stringWithContentsOfFile:name encoding:NSUTF8StringEncoding error:nil];
+  NSString *name;
+  if (path.row > 0) {
+    name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [_files objectAtIndex:path.row]];
+  } else {
+    name = [[NSBundle mainBundle] pathForResource:@"default_program" ofType:@""];
+  }
+  
+  self.programText.text =
+      [NSString stringWithContentsOfFile:name
+                                encoding:NSUTF8StringEncoding
+                                   error:nil];
   [self programChanged:nil];
   [self animateIt:-2];
 }
 
 - (IBAction)saveHit:(id)sender {
-  UIAlertView* view = [[UIAlertView alloc] initWithTitle:@"Filename"
+  UIAlertView *view = [[UIAlertView alloc] initWithTitle:@"Filename"
                                                  message:@"Enter filename"
                                                 delegate:self
                                        cancelButtonTitle:@"Cancel"
@@ -355,23 +400,23 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   [view show];
 }
 
-//UIAlertViewDelegate
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-  //okay
+// UIAlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView
+    clickedButtonAtIndex:(NSInteger)buttonIndex {
+  // okay
   if (buttonIndex != 1)
     return;
-  NSString* name = [NSString stringWithFormat:@"%@/%@", [self documentDir], [[alertView textFieldAtIndex:0] text]];
-  NSString* data = self.programText.text;
+  NSString *name =
+      [NSString stringWithFormat:@"%@/%@", [self documentDir],
+                                 [[alertView textFieldAtIndex:0] text]];
+  NSString *data = self.programText.text;
   [data writeToFile:name atomically:NO encoding:NSUTF8StringEncoding error:nil];
   [self loadFiles];
   [self.filesTableView reloadData];
 }
 
-
 #pragma mark - GL
-- (void)setupGL
-{
+- (void)setupGL {
   [EAGLContext setCurrentContext:self.context];
 
   [self loadShaders];
@@ -381,12 +426,15 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
   glGenBuffers(1, &_vertexBuffer);
   glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertices), squareVertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertices), squareVertices,
+               GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(GLKVertexAttribPosition);
-  glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, 16, BUFFER_OFFSET(0));
+  glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, 16,
+                        BUFFER_OFFSET(0));
   glEnableVertexAttribArray(GLKVertexAttribTexCoord0);
-  glVertexAttribPointer(GLKVertexAttribTexCoord0, 2, GL_FLOAT, GL_FALSE, 16, BUFFER_OFFSET(8));
+  glVertexAttribPointer(GLKVertexAttribTexCoord0, 2, GL_FLOAT, GL_FALSE, 16,
+                        BUFFER_OFFSET(8));
 
   glBindVertexArrayOES(0);
 
@@ -398,8 +446,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-- (void)tearDownGL
-{
+- (void)tearDownGL {
   [EAGLContext setCurrentContext:self.context];
 
   glDeleteBuffers(1, &_vertexBuffer);
@@ -413,8 +460,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 
 #pragma mark -  OpenGL ES 2 shader compilation
 
-- (BOOL)loadShaders
-{
+- (BOOL)loadShaders {
   GLuint vertShader, fragShader;
   NSString *vertShaderPathname, *fragShaderPathname;
 
@@ -422,15 +468,21 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   _program = glCreateProgram();
 
   // Create and compile vertex shader.
-  vertShaderPathname = [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
-  if (![self compileShader:&vertShader type:GL_VERTEX_SHADER file:vertShaderPathname]) {
+  vertShaderPathname =
+      [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
+  if (![self compileShader:&vertShader
+                      type:GL_VERTEX_SHADER
+                      file:vertShaderPathname]) {
     NSLog(@"Failed to compile vertex shader");
     return NO;
   }
 
   // Create and compile fragment shader.
-  fragShaderPathname = [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"fsh"];
-  if (![self compileShader:&fragShader type:GL_FRAGMENT_SHADER file:fragShaderPathname]) {
+  fragShaderPathname =
+      [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"fsh"];
+  if (![self compileShader:&fragShader
+                      type:GL_FRAGMENT_SHADER
+                      file:fragShaderPathname]) {
     NSLog(@"Failed to compile fragment shader");
     return NO;
   }
@@ -484,12 +536,13 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   return YES;
 }
 
-- (BOOL)compileShader:(GLuint *)shader type:(GLenum)type file:(NSString *)file
-{
+- (BOOL)compileShader:(GLuint *)shader type:(GLenum)type file:(NSString *)file {
   GLint status;
   const GLchar *source;
 
-  source = (GLchar *)[[NSString stringWithContentsOfFile:file encoding:NSUTF8StringEncoding error:nil] UTF8String];
+  source = (GLchar *)[[NSString stringWithContentsOfFile:file
+                                                encoding:NSUTF8StringEncoding
+                                                   error:nil] UTF8String];
   if (!source) {
     NSLog(@"Failed to load vertex shader");
     return NO;
@@ -519,8 +572,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   return YES;
 }
 
-- (BOOL)linkProgram:(GLuint)prog
-{
+- (BOOL)linkProgram:(GLuint)prog {
   GLint status;
   glLinkProgram(prog);
 
@@ -543,8 +595,7 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
   return YES;
 }
 
-- (BOOL)validateProgram:(GLuint)prog
-{
+- (BOOL)validateProgram:(GLuint)prog {
   GLint logLength, status;
 
   glValidateProgram(prog);
@@ -567,45 +618,48 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
 #pragma - mark mainloop
 uint32_t getcorrectedticks();
 
-- (void) updateDebugLabel {
+- (void)updateDebugLabel {
   float secs = getticks() / 1000.0;
   if (secs == 0)
     secs = 1; // avoid nan
-  NSString* info = [NSString stringWithFormat:@"FPS: %f\nMOPS: %f", _framecounter / secs, _cyclecounter / (secs*1000000)];
+  NSString *info =
+      [NSString stringWithFormat:@"FPS: %f\nMOPS: %f", _framecounter / secs,
+                                 _cyclecounter / (secs * 1000000)];
   _keys.debugString = info;
-  _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue()&0xFFFF];
+  _keys.time = [NSString stringWithFormat:@"%04X", gettimevalue() & 0xFFFF];
 }
 
-- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
-{
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
   // Use GL frame draw to drive IBNIZ VM main loop
-  // Run until we have a new frame or 1/60 of a second has passed.  Seems to be ok, can improve later.
+  // Run until we have a new frame or 1/60 of a second has passed.  Seems to be
+  // ok, can improve later.
   uint32_t prevT = getticks();
   char old_page = vm.visiblepage;
-  while ((getticks() - prevT < (1000.0/15.0)) && (old_page == vm.visiblepage)) {
+  while ((getticks() - prevT < (1000.0 / 15.0)) &&
+         (old_page == vm.visiblepage)) {
     _cyclecounter += vm_run();
     checkmediaformats();
     scheduler_check();
   }
-  
+
   // Flip frame if needed
   if (vm.visiblepage != _lastPage) {
-    _keys.mode = vm.videomode?@"t":@"tyx";
+    _keys.mode = vm.videomode ? @"t" : @"tyx";
     _lastPage = vm.visiblepage;
     _framecounter++;
-    
-    if (_framecounter%20==0) {
+
+    if (_framecounter % 20 == 0) {
       [self updateDebugLabel];
     }
-    
-    uint32_t*s=(uint32_t*) vm.mem+0xE0000+(vm.visiblepage<<16);
+
+    uint32_t *s = (uint32_t *)vm.mem + 0xE0000 + (vm.visiblepage << 16);
     glBindTexture(GL_TEXTURE_2D, _page);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, s);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, WIDTH, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, s);
   }
-  
-  vm.specialcontextstep=3;
-  
-  
+
+  vm.specialcontextstep = 3;
+
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -632,18 +686,18 @@ uint32_t getcorrectedticks();
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-- (void)keyboardWasShown:(NSNotification*)notification {
-  NSDictionary* info = [notification userInfo];
+- (void)keyboardWasShown:(NSNotification *)notification {
+  NSDictionary *info = [notification userInfo];
   CGRect r = [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
   r = [self.view convertRect:r fromView:self.view.window];
   _kbSize.height = self.view.frame.size.height - r.origin.y;
-  
+
   CGRect pr = self.programText.frame;
   pr.size.height = self.view.frame.size.height - _kbSize.height;
   self.programText.frame = pr;
 }
 
--(void)keyboardWillBeHidden:(NSNotification*)notification {
+- (void)keyboardWillBeHidden:(NSNotification *)notification {
   _kbSize = CGSizeMake(0, 0);
   CGRect pr = self.programText.frame;
   pr.size.height = self.view.frame.size.height - _kbSize.height;
@@ -658,7 +712,8 @@ static uint32_t auplaytime = 0;
 static std::atomic_bool in_audio;
 
 void reset_start() {
-  for (; in_audio; ) {} // try an wait for the buffer to get played
+  for (; in_audio;) {
+  } // try an wait for the buffer to get played
   start = CACurrentMediaTime();
   auplayptr = auplaytime = 0;
   vm.videotime = 0;
@@ -666,110 +721,99 @@ void reset_start() {
   vm.prevsp[1] = 0;
 }
 
-int getticks()
-{
+int getticks() {
   if (start == 0)
     reset_start();
   return (CACurrentMediaTime() - start) * 333.0f;
 }
 
-uint32_t getcorrectedticks()
-{
-//  uint32_t t;
-//  if(ui.runstat==1) t=getticks()-ui.timercorr;
-//  else t=ui.paused_since-ui.timercorr;
-//  return t;
+uint32_t getcorrectedticks() {
+  //  uint32_t t;
+  //  if(ui.runstat==1) t=getticks()-ui.timercorr;
+  //  else t=ui.paused_since-ui.timercorr;
+  //  return t;
   return getticks();
 }
 
-uint32_t gettimevalue()
-{
-  uint32_t t=getcorrectedticks();
-  return (t*3)/50; // milliseconds to 60Hz-frames
+uint32_t gettimevalue() {
+  uint32_t t = getcorrectedticks();
+  return (t * 3) / 50; // milliseconds to 60Hz-frames
 }
 
-void waitfortimechange()
-{
+void waitfortimechange() {
   // Not needed because we ditch when frame changes
 }
 
-void checkmediaformats()
-{
-  if(vm.wcount[1]!=0 && vm.spchange[1]<=0)
-  {
+void checkmediaformats() {
+  if (vm.wcount[1] != 0 && vm.spchange[1] <= 0) {
     NSLog(@"audio stack underrun; shut it off!\n");
     audio_off = true;
-    vm.spchange[1]=vm.wcount[1]=0;
+    vm.spchange[1] = vm.wcount[1] = 0;
   }
 
-  if(vm.wcount[0]==0) return;
+  if (vm.wcount[0] == 0)
+    return;
 
   // t-video in tyx-video mode produces 2 words extra per wcount
-  if((vm.videomode==0) && (vm.spchange[0]-vm.wcount[0]*2==1))
-  {
-    vm.videomode=1;
-    NSLog(@"switched to t-video (sp changed by %d with %d w)\n",
-          vm.spchange[0],vm.wcount[0]);
-  }
-  else if((vm.videomode==1) && (vm.spchange[0]+vm.wcount[0]*2==1))
-  {
-    vm.videomode=0;
-   NSLog(@"switched to tyx-video");
+  if ((vm.videomode == 0) && (vm.spchange[0] - vm.wcount[0] * 2 == 1)) {
+    vm.videomode = 1;
+    NSLog(@"switched to t-video (sp changed by %d with %d w)\n", vm.spchange[0],
+          vm.wcount[0]);
+  } else if ((vm.videomode == 1) && (vm.spchange[0] + vm.wcount[0] * 2 == 1)) {
+    vm.videomode = 0;
+    NSLog(@"switched to tyx-video");
   }
 
-  if((vm.videomode==1) && (vm.spchange[1]+vm.wcount[1]*2==1))
-  {
-   NSLog(@"A<=>V detected!\n");
+  if ((vm.videomode == 1) && (vm.spchange[1] + vm.wcount[1] * 2 == 1)) {
+    NSLog(@"A<=>V detected!\n");
     switchmediacontext();
-    vm.videomode=0;
+    vm.videomode = 0;
     /* prevent loop */
-    vm.spchange[0]=0; vm.wcount[0]=0;
-    vm.spchange[1]=0; vm.wcount[1]=0;
+    vm.spchange[0] = 0;
+    vm.wcount[0] = 0;
+    vm.spchange[1] = 0;
+    vm.wcount[1] = 0;
   }
 }
 
 /*** scheduling logic (not really that ui_sdl-specific) ***/
 
-void scheduler_check()
-{
+void scheduler_check() {
   /*
    audiotime incs by 1 per frametick
    auplaytime incs by 1<<16 per frametick
    auplayptr incs by 1<<32 per 1<<22-inc of auplaytime
    */
-  uint32_t playback_at = auplaytime+(auplayptr>>10);
-  uint32_t auwriter_at = vm.audiotime*65536+vm.prevsp[1]*64;
+  uint32_t playback_at = auplaytime + (auplayptr >> 10);
+  uint32_t auwriter_at = vm.audiotime * 65536 + vm.prevsp[1] * 64;
 
-  if((vm.prevsp[1]>0) && playback_at>auwriter_at)
-  {
-   NSLog(@"%x > %x! (sp %x & %x) jumping forward\n",playback_at,auwriter_at,
-         vm.sp,vm.cosp);
-    vm.audiotime=((auplaytime>>16)&~63)+64;
-    vm.preferredmediacontext=1;
-  }
-  else if(playback_at+PLAYBACKGAP*0x10000>auwriter_at)
-    vm.preferredmediacontext=1;
+  if ((vm.prevsp[1] > 0) && playback_at > auwriter_at) {
+    NSLog(@"%x > %x! (sp %x & %x) jumping forward\n", playback_at, auwriter_at,
+          vm.sp, vm.cosp);
+    vm.audiotime = ((auplaytime >> 16) & ~63) + 64;
+    vm.preferredmediacontext = 1;
+  } else if (playback_at + PLAYBACKGAP * 0x10000 > auwriter_at)
+    vm.preferredmediacontext = 1;
   else
-    vm.preferredmediacontext=0;
+    vm.preferredmediacontext = 0;
 }
 
-void audio_callback(unsigned int frames, float ** input_buffer, float ** output_buffer, void * user_data) {
+void audio_callback(unsigned int frames, float **input_buffer,
+                    float **output_buffer, void *user_data) {
   if (!audio_off) {
     in_audio = true;
-    uint32_t aupp0=auplayptr;
-    
+    uint32_t aupp0 = auplayptr;
+
     float buff[frames];
-    
-    for(int i = 0; i < frames; i++)
-    {
-      int16_t ival = (vm.mem[0xd0000+((auplayptr>>16)&0xffff)]+0x8000);
+
+    for (int i = 0; i < frames; i++) {
+      int16_t ival = (vm.mem[0xd0000 + ((auplayptr >> 16) & 0xffff)] + 0x8000);
       buff[i] = ival;
-      auplayptr+=0x164A9; /* (61440<<16)/44100 */
+      auplayptr += 0x164A9; /* (61440<<16)/44100 */
       // todo later: some interpolation/filtering
     }
-    if(aupp0>auplayptr)
-    {
-      auplaytime+=64*65536;
+    if (aupp0 > auplayptr) {
+      auplaytime += 64 * 65536;
     }
     in_audio = false;
     float divisor = INT16_MAX;
@@ -780,4 +824,3 @@ void audio_callback(unsigned int frames, float ** input_buffer, float ** output_
     memset(output_buffer[1], 0, frames * sizeof(float));
   }
 }
-

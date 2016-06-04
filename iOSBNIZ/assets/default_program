@@ -1,0 +1,24 @@
+\ This is the iOS port of IBNIZ.  Swipe left to read IBNIZ help. Here are some features to check out:
+\ Custom keyboard: you can switch back and forth by hitting the KB button. With the custom keyboard, long press any key for opcode reference.
+
+\ For each pixel, IBNIZ pushes a value for t, y, and x onto the stack. To put a solid color onto the screen, pop these three values off the stack and put a 16.16 fixed point value onto the stack yyuu.vvvv.
+\ Remove the beginning slash below to see it in action.  Long press p on the keyboard to get help about the p opcode.
+  \ ppp DBDB.FFFF
+
+\ The UP and DOWN buttons will increment and decrement the number at the cursor, move your cursor to the first F after the period and try, watch the color get darker.
+
+\ Let's just display x on the screen, use the x and p opcode to do this.
+  \ xpxp
+
+\ Notice the bands, the coordinate system is -1..1 encoded as FFFF.0000 to 0000.FFFF
+\ Let's get Y
+  \ pxp
+
+\ Get help by swiping left, load/save programs by swiping left again
+
+\ Swipe right to do a full screen
+
+\ Shake to disable swipe and send touches to the U opcode. Try it below.
+  \ ppp UFl
+
+\ Have fun!

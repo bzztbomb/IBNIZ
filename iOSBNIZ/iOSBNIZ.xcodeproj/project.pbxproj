@@ -22,6 +22,7 @@
 		C8BA031C1BF3C6F80023B683 /* compiler.c in Sources */ = {isa = PBXBuildFile; fileRef = C8BA031A1BF3C6F80023B683 /* compiler.c */; };
 		C8BA031D1BF3C6F80023B683 /* vm_slow.c in Sources */ = {isa = PBXBuildFile; fileRef = C8BA031B1BF3C6F80023B683 /* vm_slow.c */; };
 		C8C481CD1CDD7B2800E3087D /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8C481CC1CDD7B2800E3087D /* Accelerate.framework */; };
+		C8CDD8161D03356300E27E86 /* default_program in Resources */ = {isa = PBXBuildFile; fileRef = C8CDD8151D03356300E27E86 /* default_program */; };
 		C8F0A4B81C057486002CCC75 /* AudioController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B01C057486002CCC75 /* AudioController.mm */; };
 		C8F0A4B91C057486002CCC75 /* CADebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B11C057486002CCC75 /* CADebugMacros.cpp */; };
 		C8F0A4BA1C057486002CCC75 /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8F0A4B61C057486002CCC75 /* CAStreamBasicDescription.cpp */; };
@@ -52,6 +53,7 @@
 		C8BA031A1BF3C6F80023B683 /* compiler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compiler.c; sourceTree = "<group>"; };
 		C8BA031B1BF3C6F80023B683 /* vm_slow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vm_slow.c; sourceTree = "<group>"; };
 		C8C481CC1CDD7B2800E3087D /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		C8CDD8151D03356300E27E86 /* default_program */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = default_program; path = assets/default_program; sourceTree = SOURCE_ROOT; };
 		C8F0A4AF1C057486002CCC75 /* AudioController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioController.h; sourceTree = "<group>"; };
 		C8F0A4B01C057486002CCC75 /* AudioController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioController.mm; sourceTree = "<group>"; };
 		C8F0A4B11C057486002CCC75 /* CADebugMacros.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CADebugMacros.cpp; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 		C8BA03021BF3C5780023B683 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C8CDD8151D03356300E27E86 /* default_program */,
 				C850576E1CD9052200F5F16B /* icon_1024x1024.png */,
 				C8FD0F9E1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf */,
 				C8BA03031BF3C5780023B683 /* main.m */,
@@ -226,6 +229,7 @@
 				C88B08051C00FA6500A18E2C /* Shader.fsh in Resources */,
 				C8BA03121BF3C5780023B683 /* LaunchScreen.storyboard in Resources */,
 				C8BA030F1BF3C5780023B683 /* Assets.xcassets in Resources */,
+				C8CDD8161D03356300E27E86 /* default_program in Resources */,
 				C8FD0F9F1C2131E100004461 /* C64_Pro_Mono-STYLE.ttf in Resources */,
 				C850576F1CD9052200F5F16B /* icon_1024x1024.png in Resources */,
 				C8BA030D1BF3C5780023B683 /* Main.storyboard in Resources */,
